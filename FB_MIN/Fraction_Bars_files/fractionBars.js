@@ -827,22 +827,27 @@ function updateMouseAction(actionName) {
 	$('#mouseAction').text(actionName) ;
 	*/
 }
-// Add this after the existing $(document).ready(function() { ... });
-$(function() { 
+var barToolActive = false; // Flag to track 'bar' tool state
+
+$(document).ready(function() {
+    // All your existing code from $(document).ready should be here
+});
+
+$(function() {
     var fbCanvas = document.getElementById('fbCanvas');
     var hammertime = new Hammer(fbCanvas);
 
     // Recognize a double tap
     hammertime.on('doubletap', function(e) {
-        var fbImg = fbContext.getImageData(0,0,1000,600);
-        fbContext.clearRect(0,0,1000,600);
-        fbContext.putImageData(fbImg,0,0);
+        var fbImg = fbContext.getImageData(0, 0, 1000, 600);
+        fbContext.clearRect(0, 0, 1000, 600);
+        fbContext.putImageData(fbImg, 0, 0);
     });
 
     // Recognize a pan (drag)
     hammertime.on('pan', function(e) {
         var p = new Point();
-        p.x = Math.round(e.center.x - $('#fbCanvas').position().left  + window.pageXOffset);
+        p.x = Math.round(e.center.x - $('#fbCanvas').position().left + window.pageXOffset);
         p.y = Math.round(e.center.y - $('#fbCanvas').position().top + window.pageYOffset);
 
         if (fbCanvasObj.currentAction == "manualSplit") {
@@ -859,26 +864,129 @@ $(function() {
         fbCanvasObj.check_for_drag = true;
         fbCanvasObj.cacheUndoState();
 
-        updateMouseAction('mousedown'); // This can stay as it is
+        updateMouseAction('mousedown');
 
         fbCanvasObj.mouseDownLoc = new Point();
-        fbCanvasObj.mouseDownLoc.x = Math.round(e.center.x - $('#fbCanvas').position().left  + window.pageXOffset);
+        fbCanvasObj.mouseDownLoc.x = Math.round(e.center.x - $('#fbCanvas').position().left + window.pageXOffset);
         fbCanvasObj.mouseDownLoc.y = Math.round(e.center.y - $('#fbCanvas').position().top + window.pageYOffset);
 
         var b = fbCanvasObj.barClickedOn();
         var m = fbCanvasObj.matClickedOn();
 
-        // ... (rest of your existing code in the #fbCanvas mousedown function)
+        if (fbCanvasObj.currentAction == "bar" && !barToolActive) {
+            fbCanvasObj.saveCanvas();
+            barToolActive = true; // Activate the 'bar' tool
+        }
+
+        if (b !== null) {
+            fbCanvasObj.selected_bar = b;
+            fbCanvasObj.refreshCanvas();
+        } else if (m !== null) {
+            fbCanvasObj.selected_mat = m;
+            fbCanvasObj.refreshCanvas();
+        } else if (fbCanvasObj.currentAction == "partition") {
+            fbCanvasObj.saveCanvas();
+            fbCanvasObj.partitionPoint = new Point();
+            fbCanvasObj.partitionPoint.x = Math.round(e.center.x - $('#fbCanvas').position().left + window.pageXOffset);
+            fbCanvasObj.partitionPoint.y = Math.round(e.center.y - $('#fbCanvas').position().top + window.pageYOffset);
+            fbCanvasObj.partition();
+        } else if (fbCanvasObj.currentAction == "bar") {
+            fbCanvasObj.saveCanvas();
+            fbCanvasObj.newBarMouseDownLoc = new Point();
+            fbCanvasObj.newBarMouseDownLoc.x = Math.round(e.center.x - $('#fbCanvas').position().left + window.pageXOffset);
+            fbCanvasObj.newBarMouseDownLoc.y = Math.round(e.center.y - $('#fbCanvas').position().top + window.pageYOffset);
+        } else if (fbCanvasObj.currentAction == "mat") {
+            fbCanvasObj.saveCanvas();
+            fbCanvasObj.newMatMouseDownLoc = new Point();
+            fbCanvasObj.newMatMouseDownLoc.x = Math.round(e.center.x - $('#fbCanvas').position().left + window.pageXOffset);
+            fbCanvasObj.newMatMouseDownLoc.y = Math.round(e.center.y - $('#fbCanvas').position().top + window.pageYOffset);
+        } else if (fbCanvasObj.currentAction == "eraser") {
+            fbCanvasObj.saveCanvas();
+            fbCanvasObj.erase(Math.round(e.center.x - $('#fbCanvas').position().left + window.pageXOffset), Math.round(e.center.y - $('#fbCanvas').position().top + window.pageYOffset));
+        }
     });
 
     hammertime.on('panend', function(e) {
-        updateMouseAction('mouseup'); // This can stay as it is
+        updateMouseAction('mouseup');
         var p = new Point();
-        p.x = Math.round(e.center.x - $('#fbCanvas').position().left  + window.pageXOffset);
+        p.x = Math.round(e.center.x - $('#fbCanvas').position().left + window.pageXOffset);
         p.y = Math.round(e.center.y - $('#fbCanvas').position().top + window.pageYOffset);
 
         fbCanvasObj.mouseUpLoc = p;
 
-        // ... (rest of your existing code in the #fbCanvas mouseup function)
+        if (fbCanvasObj.currentAction == 'bar' && barToolActive) {
+            fbCanvasObj.addUndoState();
+            fbCanvasObj.addBar();
+            fbCanvasObj.clear_selection_button();
+            barToolActive = false; // Deactivate the 'bar' tool
+        }
+
+        if (fbCanvasObj.currentAction == "mat") {
+            fbCanvasObj.addUndoState();
+            fbCanvasObj.addMat();
+        } else if (fbCanvasObj.currentAction == "eraser") {
+            fbCanvasObj.addUndoState();
+        } else if (fbCanvasObj.currentAction == "move") {
+            fbCanvasObj.moveSelectedItems(p);
+            fbCanvasObj.addUndoState();
+        } else if (fbCanvasObj.currentAction == "manualSplit") {
+            fbCanvasObj.manualSplit();
+            fbCanvasObj.addUndoState();
+        }
+
+        fbCanvasObj.mouseDownLoc = null;
+        fbCanvasObj.check_for_drag = false;
+    });
+
+    $('a').click(function(e) {
+        var thisId = $(this).attr('id');
+
+        if (thisId.indexOf('tool_') > -1) {
+            fbCanvasObj.currentAction = thisId.substring(5);
+            fbCanvasObj.clear_selection_button();
+            $('#' + thisId).addClass('selected');
+        }
+
+        if (thisId.indexOf('tool_') > -1 && thisId !== 'tool_bar') {
+            barToolActive = false; // Deactivate if another tool is selected
+        }
+
+        if (thisId == "undo") {
+            fbCanvasObj.undo();
+        } else if (thisId == "redo") {
+            fbCanvasObj.redo();
+        } else if (thisId == "duplicate") {
+            fbCanvasObj.duplicateSelectedItem();
+        } else if (thisId == "delete") {
+            fbCanvasObj.deleteSelectedItem();
+        } else if (thisId == "thicker") {
+            fbCanvasObj.thickerLine();
+        } else if (thisId == "thinner") {
+            fbCanvasObj.thinnerLine();
+        } else if (thisId == "thickerBar") {
+            fbCanvasObj.thickerBar();
+        } else if (thisId == "thinnerBar") {
+            fbCanvasObj.thinnerBar();
+        } else if (thisId == "setUnitBar") {
+            fbCanvasObj.setUnitBar();
+        } else if (thisId == "selectAll") {
+            fbCanvasObj.selectAll();
+        } else if (thisId == "unselectAll") {
+            fbCanvasObj.unselectAll();
+        } else if (thisId == "group") {
+            fbCanvasObj.groupSelectedItems();
+        } else if (thisId == "ungroup") {
+            fbCanvasObj.ungroupSelectedItem();
+        } else if (thisId == "front") {
+            fbCanvasObj.bringSelectedItemsToFront();
+        } else if (thisId == "back") {
+            fbCanvasObj.sendSelectedItemsToBack();
+        } else if (thisId == "save_image") {
+            saveImage();
+        } else if (thisId == "load_image") {
+            loadImage();
+        }
+
+        fbCanvasObj.refreshCanvas();
     });
 });
