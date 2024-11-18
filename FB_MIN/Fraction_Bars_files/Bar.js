@@ -11,31 +11,34 @@
 
 
 function Bar() {
-	//TODO: convert x, y to a Point?
-	this.x = null ;
-	this.y = null ;
-	this.w = null ;
-	this.h = null ;
-	this.size = null ;
-	this.color = null ;
-	this.splits = [] ;
-	this.label = '' ;
-	this.isUnitBar = false ;
-	this.fraction = '' ;
-	this.type = null ;
-	this.isSelected = false ;
-	this.repeatUnit = null;    // This is a copy of whatever the bar looks like at the moment "repeat" mode is turned on.
-	this.selectedSplit = null;
+    this.x = 0; // Default to 0 instead of null
+    this.y = 0;
+    this.w = 1; // Minimum size of 1 to avoid zero-width/height issues
+    this.h = 1;
+    this.size = 0; // Initially zero, updated when dimensions are set
+    this.color = '#000000'; // Default color
+    this.splits = [];
+    this.label = '';
+    this.isUnitBar = false;
+    this.fraction = '';
+    this.type = null;
+    this.isSelected = false;
+    this.repeatUnit = null;
+    this.selectedSplit = null;
 }
-
 Bar.prototype.measure = function(targetBar) {
 	this.fraction = Utilities.createFraction( this.size, targetBar.size ) ;
 };
 Bar.prototype.clearMeasurement = function() {
 	this.fraction = '' ;
 };
-Bar.prototype.drawMeasurement = function() {};
-
+Bar.prototype.drawMeasurement = function (context) {
+    context.beginPath();
+    context.rect(this.x, this.y, this.w, this.h);
+    context.fillStyle = this.color;
+    context.fill();
+    context.stroke();
+};
 
 Bar.prototype.addSplit = function(x, y, w, h, c) {
 	this.addSplitToList(this.splits, x, y, w, h, c);
@@ -615,26 +618,39 @@ Bar.prototype.unPastel = function() {
 
 // static methods
 
-Bar.create = function(x, y, w, h, type, color) {
-	var b = new Bar() ;
-	b.x = x ;
-	b.y = y ;
-	b.w = w ;
-	b.h = h ;
-	b.size = w * h ;
-	b.color = color ;
-	b.type = type ;
-	return b ;
+Bar.create = function (x, y, w, h, type, color) {
+    if (w <= 0 || h <= 0) {
+        console.error('Invalid bar dimensions:', { x, y, w, h });
+        return null; // Prevent invalid bar creation
+    }
+
+    const b = new Bar();
+    b.x = x;
+    b.y = y;
+    b.w = w;
+    b.h = h;
+    b.size = w * h;
+    b.color = color || '#000000'; // Fallback to default color
+    b.type = type;
+    return b;
 };
 
-Bar.createFromMouse = function(p1, p2, type, color) {
-	var w = Math.abs(p2.x - p1.x) ;
-	var h = Math.abs(p2.y - p1.y) ;
-	var p = Point.min( p1, p2 ) ;
-	var b = Bar.create(p.x, p.y, w, h, type, color) ;
-	return b ;
-};
+Bar.createFromMouse = function (p1, p2, type, color) {
+    const x1 = Math.min(p1.x, p2.x);
+    const y1 = Math.min(p1.y, p2.y);
+    const x2 = Math.max(p1.x, p2.x);
+    const y2 = Math.max(p1.y, p2.y);
 
+    const w = x2 - x1;
+    const h = y2 - y1;
+
+    if (w <= 0 || h <= 0) {
+        console.warn('Invalid dimensions from mouse/touch:', { p1, p2 });
+        return null;
+    }
+
+    return Bar.create(x1, y1, w, h, type, color);
+};
 
 Bar.createFromSplit = function(s, inx, iny) {
 	var b = Bar.create(inx+s.x+10, iny+s.y+10, s.w, s.h, this.type, s.color) ;
