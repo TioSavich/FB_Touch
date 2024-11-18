@@ -29,7 +29,7 @@
     <script type="text/javascript">
 document.addEventListener('DOMContentLoaded', function () {
     const canvas = document.getElementById('fbCanvas');
-    const context = canvas.getContext('2d');
+    const context = canvas.getContext('2d', { willReadFrequently: true });
     let isDragging = false;
     let startPoint = null;
     let activeTool = null;
@@ -37,10 +37,13 @@ document.addEventListener('DOMContentLoaded', function () {
     const drawnBars = []; // Array to store drawn bars
 
     // Set active tool
-    const setActiveTool = (tool) => {
+	const setActiveTool = (tool) => {
+    if (activeTool === tool) {
+        activeTool = null; // Deactivate tool if it's already active
+    } else {
         activeTool = tool;
-    };
-
+    }
+};
     // Bar button event listener
     document.getElementById('tool_bar').addEventListener('click', () => {
         setActiveTool('bar');
@@ -48,21 +51,15 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Normalize coordinates for mouse and touch events
-    function getEventPosition(event) {
-        const rect = canvas.getBoundingClientRect();
-        if (event.touches && event.touches.length > 0) {
-            return {
-                x: event.touches[0].clientX - rect.left,
-                y: event.touches[0].clientY - rect.top,
-            };
-        } else {
-            return {
-                x: event.clientX - rect.left,
-                y: event.clientY - rect.top,
-            };
-        }
+	document.getElementById('tool_bar').addEventListener('click', () => {
+    if (activeTool === 'bar') {
+        setActiveTool(null); // Deactivate tool
+        console.log('Bar tool deactivated');
+    } else {
+        setActiveTool('bar'); // Activate bar tool
+        console.log('Bar tool selected');
     }
-
+});
     // Redraw all bars
     function redrawBars() {
         context.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
@@ -79,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Start bar creation
     function startInteraction(event) {
         if (activeTool === 'bar') {
-            event.preventDefault(); // Prevent default touch behavior
+            event.preventDefault();
             startPoint = getEventPosition(event);
             isDragging = true;
             console.log('Bar drawing started at:', startPoint);
@@ -87,9 +84,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Update bar while dragging
-    function moveInteraction(event) {
-        if (isDragging && activeTool === 'bar') {
-            event.preventDefault(); // Prevent default touch behavior
+	let redrawTimeout;
+
+function moveInteraction(event) {
+    if (isDragging && activeTool === 'bar') {
+        clearTimeout(redrawTimeout);
+
+        redrawTimeout = setTimeout(() => {
             const currentPoint = getEventPosition(event);
 
             // Calculate bar dimensions
@@ -98,65 +99,56 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (width !== 0 && height !== 0) {
                 redrawBars(); // Clear and redraw existing bars
-
-                // Draw the bar dynamically as it is dragged
                 context.beginPath();
                 context.rect(startPoint.x, startPoint.y, width, height);
                 context.fillStyle = selectedColor;
                 context.fill();
                 context.stroke();
-
-                console.log('Drawing bar to:', currentPoint, 'Width:', width, 'Height:', height);
             }
-        }
+        }, 16); // Roughly 60fps
     }
+}
 
     // Finalize bar creation
-    function endInteraction(event) {
-        if (isDragging && activeTool === 'bar') {
-            event.preventDefault(); // Prevent default touch behavior
-            const endPoint = getEventPosition(event);
+	function endInteraction(event) {
+    if (isDragging && activeTool === 'bar') {
+        event.preventDefault();
+        const endPoint = getEventPosition(event);
 
-            // Calculate final dimensions
-            const width = endPoint.x - startPoint.x;
-            const height = endPoint.y - startPoint.y;
+        const width = endPoint.x - startPoint.x;
+        const height = endPoint.y - startPoint.y;
 
-            if (width > 0 && height > 0) {
-                const newBar = {
-                    start: { x: startPoint.x, y: startPoint.y },
-                    width,
-                    height,
-                    color: selectedColor,
-                };
+        // Only save the bar if it has valid dimensions
+        if (width > 0 && height > 0) {
+            const newBar = {
+                start: { x: startPoint.x, y: startPoint.y },
+                width,
+                height,
+                color: selectedColor,
+            };
 
-                drawnBars.push(newBar);
-                console.log('Bar finalized:', newBar);
-            }
-
-            isDragging = false;
-            startPoint = null;
-
-            redrawBars();
+            drawnBars.push(newBar);
+            console.log('Bar finalized:', newBar);
         }
+
+        isDragging = false; // Reset dragging state
+        activeTool = null; // Reset active tool state
+        startPoint = null; // Clear the start point
+
+        redrawBars();
     }
+}
 
     // Add event listeners for both touch and mouse events
-    canvas.addEventListener('mousedown', startInteraction);
-    canvas.addEventListener('mousemove', moveInteraction);
-    canvas.addEventListener('mouseup', endInteraction);
+	canvas.addEventListener('mousedown', startInteraction);
+canvas.addEventListener('mousemove', moveInteraction);
+canvas.addEventListener('mouseup', endInteraction);
 
-    canvas.addEventListener('touchstart', (event) => {
-        startInteraction(event);
-    }, { passive: false });
-
-    canvas.addEventListener('touchmove', (event) => {
-        moveInteraction(event);
-    }, { passive: false });
-
-    canvas.addEventListener('touchend', (event) => {
-        endInteraction(event);
-    }, { passive: false });
+canvas.addEventListener('touchstart', startInteraction, { passive: false });
+canvas.addEventListener('touchmove', moveInteraction, { passive: false });
+canvas.addEventListener('touchend', endInteraction, { passive: false });
 });
+console.log('Tool state:', activeTool, 'Dragging state:', isDragging);
     </script>
 </head>
 <body data-new-gr-c-s-check-loaded="14.1208.0" data-gr-ext-installed="">
