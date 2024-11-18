@@ -30,7 +30,25 @@
 document.addEventListener('DOMContentLoaded', function () {
     const canvas = document.getElementById('fbCanvas');
     const context = canvas.getContext('2d', { willReadFrequently: true });
-    let isDragging = false;
+    document.addEventListener('DOMContentLoaded', function () {
+    const canvas = document.getElementById('fbCanvas');
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+
+    function getEventPosition(event) {
+        let x, y;
+
+        if (event.touches) {
+            const touch = event.touches[0];
+            x = touch.clientX - canvas.offsetLeft;
+            y = touch.clientY - canvas.offsetTop;
+        } else {
+            x = event.clientX - canvas.offsetLeft;
+            y = event.clientY - canvas.offsetTop;
+        }
+
+        return { x, y };
+    }
+let isDragging = false;
     let startPoint = null;
     let activeTool = null;
     let selectedColor = '#ff8800'; // Default color
@@ -72,17 +90,30 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         console.log('Canvas redrawn with bars:', drawnBars);
     }
+	function getEventPosition(event) {
+    let x, y;
 
-    // Start bar creation
-    function startInteraction(event) {
-        if (activeTool === 'bar') {
-            event.preventDefault();
-            startPoint = getEventPosition(event);
-            isDragging = true;
-            console.log('Bar drawing started at:', startPoint);
-        }
+    if (event.touches) {
+        // Handle touch events
+        const touch = event.touches[0]; // Get the first touch point
+        x = touch.clientX - canvas.offsetLeft;
+        y = touch.clientY - canvas.offsetTop;
+    } else {
+        // Handle mouse events
+        x = event.clientX - canvas.offsetLeft;
+        y = event.clientY - canvas.offsetTop;
     }
 
+    return { x, y };
+    // Start bar creation
+	function startInteraction(event) {
+    if (activeTool === 'bar') {
+        event.preventDefault(); // Prevent scrolling or other default behavior
+        startPoint = getEventPosition(event);
+        isDragging = true;
+        console.log('Bar drawing started at:', startPoint);
+    }
+}
     // Update bar while dragging
 	let redrawTimeout;
 
@@ -143,6 +174,7 @@ function moveInteraction(event) {
 	canvas.addEventListener('mousedown', startInteraction);
 canvas.addEventListener('mousemove', moveInteraction);
 canvas.addEventListener('mouseup', endInteraction);
+
 
 canvas.addEventListener('touchstart', startInteraction, { passive: false });
 canvas.addEventListener('touchmove', moveInteraction, { passive: false });
