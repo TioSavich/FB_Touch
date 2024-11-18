@@ -29,7 +29,7 @@
     <script type="text/javascript">
 document.addEventListener('DOMContentLoaded', function () {
     const canvas = document.getElementById('fbCanvas');
-    const context = canvas.getContext('2d');
+    const context = canvas.getContext('2d', { willReadFrequently: true }););
     let isDragging = false;
     let startPoint = null;
     let activeTool = null;
@@ -47,24 +47,15 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log('Bar tool selected');
     });
 
-    // Color selection
-    document.querySelectorAll('.colorBlock').forEach(colorBlock => {
-        colorBlock.addEventListener('click', () => {
-            selectedColor = window.getComputedStyle(colorBlock).backgroundColor;
-            console.log('Selected color:', selectedColor);
-        });
-    });
-
     // Normalize coordinates for mouse and touch events
     function getEventPosition(event) {
+        const rect = canvas.getBoundingClientRect();
         if (event.touches && event.touches.length > 0) {
-            const rect = canvas.getBoundingClientRect();
             return {
                 x: event.touches[0].clientX - rect.left,
                 y: event.touches[0].clientY - rect.top,
             };
         } else {
-            const rect = canvas.getBoundingClientRect();
             return {
                 x: event.clientX - rect.left,
                 y: event.clientY - rect.top,
@@ -82,6 +73,7 @@ document.addEventListener('DOMContentLoaded', function () {
             context.fill();
             context.stroke();
         }
+        console.log('Canvas redrawn with bars:', drawnBars);
     }
 
     // Start bar creation
@@ -95,53 +87,59 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Update bar while dragging
-    function moveInteraction(event) {
-        if (isDragging && activeTool === 'bar') {
-            event.preventDefault();
+	let redrawTimeout;
+
+function moveInteraction(event) {
+    if (isDragging && activeTool === 'bar') {
+        clearTimeout(redrawTimeout);
+
+        redrawTimeout = setTimeout(() => {
             const currentPoint = getEventPosition(event);
-            redrawBars(); // Clear and redraw existing bars
 
             // Calculate bar dimensions
             const width = currentPoint.x - startPoint.x;
             const height = currentPoint.y - startPoint.y;
 
-            // Draw the bar dynamically as it is dragged
-            context.beginPath();
-            context.rect(startPoint.x, startPoint.y, width, height);
-            context.fillStyle = selectedColor;
-            context.fill();
-            context.stroke();
-
-            console.log('Drawing bar to:', currentPoint, 'Width:', width, 'Height:', height);
-        }
+            if (width !== 0 && height !== 0) {
+                redrawBars(); // Clear and redraw existing bars
+                context.beginPath();
+                context.rect(startPoint.x, startPoint.y, width, height);
+                context.fillStyle = selectedColor;
+                context.fill();
+                context.stroke();
+            }
+        }, 16); // Roughly 60fps
     }
+}
 
     // Finalize bar creation
     function endInteraction(event) {
-        if (isDragging && activeTool === 'bar') {
-            event.preventDefault();
+    if (isDragging && activeTool === 'bar') {
+        event.preventDefault();
+        const endPoint = getEventPosition(event);
 
-            // Finalize the current bar
-            const endPoint = getEventPosition(event);
-            const width = endPoint.x - startPoint.x;
-            const height = endPoint.y - startPoint.y;
+        const width = endPoint.x - startPoint.x;
+        const height = endPoint.y - startPoint.y;
 
-            drawnBars.push({
+        // Only save the bar if it has valid dimensions
+        if (width > 0 && height > 0) {
+            const newBar = {
                 start: { x: startPoint.x, y: startPoint.y },
-                width: width,
-                height: height,
+                width,
+                height,
                 color: selectedColor,
-            });
+            };
 
-            redrawBars(); // Ensure all bars are redrawn
-            console.log('Bar finalized:', { start: startPoint, width, height });
-
-            // Reset state
-            isDragging = false;
-            startPoint = null;
-            activeTool = null; // Unlatch the tool after creating one bar
+            drawnBars.push(newBar);
+            console.log('Bar finalized:', newBar);
         }
+
+        isDragging = false;
+        startPoint = null;
+
+        redrawBars();
     }
+}
 
     // Add event listeners for both touch and mouse events
     canvas.addEventListener('mousedown', startInteraction);
