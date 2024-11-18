@@ -27,59 +27,100 @@
     <script src="./Fraction_Bars_files/FractionBarsCanvas.js" type="application/javascript" language="javascript"></script>
     <script src="./Fraction_Bars_files/fractionBars.js" type="application/javascript" language="javascript"></script>
     <script type="text/javascript">
-        document.addEventListener('DOMContentLoaded', function () {
-            const canvas = document.getElementById('fbCanvas');
-            const context = canvas.getContext('2d');
-            let isDragging = false;
+     document.addEventListener('DOMContentLoaded', function () {
+    const canvas = document.getElementById('fbCanvas');
+    const context = canvas.getContext('2d');
+    let isDragging = false;
+    let startPoint = null;
+    let activeTool = null;
 
-            // Normalize event coordinates for touch and mouse
-            function getEventPosition(event) {
-                if (event.touches && event.touches.length > 0) {
-                    return {
-                        x: event.touches[0].clientX - canvas.offsetLeft,
-                        y: event.touches[0].clientY - canvas.offsetTop,
-                    };
-                } else {
-                    return {
-                        x: event.clientX - canvas.offsetLeft,
-                        y: event.clientY - canvas.offsetTop,
-                    };
-                }
-            }
+    // Function to set the active tool
+    const setActiveTool = (tool) => {
+        activeTool = tool;
+    };
 
-            // Event handlers
-            function startInteraction(event) {
-                event.preventDefault();
-                const position = getEventPosition(event);
-                isDragging = true;
-                console.log('Interaction started at:', position);
-                // Add your custom interaction logic here
-            }
+    // Event handlers for selecting the bar tool
+    const barToolButton = document.getElementById('tool_bar');
+    barToolButton.addEventListener('click', () => {
+        setActiveTool('bar');
+        console.log('Bar tool selected');
+    });
 
-            function moveInteraction(event) {
-                if (!isDragging) return;
-                event.preventDefault();
-                const position = getEventPosition(event);
-                console.log('Dragging to:', position);
-                // Add your custom dragging logic here
-            }
+    // Normalize event coordinates for touch and mouse
+    function getEventPosition(event) {
+        if (event.touches && event.touches.length > 0) {
+            return {
+                x: event.touches[0].clientX - canvas.offsetLeft,
+                y: event.touches[0].clientY - canvas.offsetTop,
+            };
+        } else {
+            return {
+                x: event.clientX - canvas.offsetLeft,
+                y: event.clientY - canvas.offsetTop,
+            };
+        }
+    }
 
-            function endInteraction(event) {
-                event.preventDefault();
-                isDragging = false;
-                console.log('Interaction ended');
-                // Add your custom interaction end logic here
-            }
+    // Event handlers for the canvas
+    function startInteraction(event) {
+        if (activeTool === 'bar') {
+            event.preventDefault();
+            startPoint = getEventPosition(event);
+            isDragging = true;
+            console.log('Bar drawing started at:', startPoint);
+        }
+    }
 
-            // Add event listeners for both touch and mouse events
-            canvas.addEventListener('mousedown', startInteraction);
-            canvas.addEventListener('mousemove', moveInteraction);
-            canvas.addEventListener('mouseup', endInteraction);
+    function moveInteraction(event) {
+        if (isDragging && activeTool === 'bar') {
+            event.preventDefault();
+            const currentPoint = getEventPosition(event);
 
-            canvas.addEventListener('touchstart', startInteraction);
-            canvas.addEventListener('touchmove', moveInteraction);
-            canvas.addEventListener('touchend', endInteraction);
-        });
+            // Clear canvas for redrawing (if necessary)
+            context.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Redraw existing elements here (if applicable)
+
+            // Draw the bar
+            context.beginPath();
+            context.rect(
+                startPoint.x,
+                startPoint.y,
+                currentPoint.x - startPoint.x,
+                20 // Fixed bar height for simplicity
+            );
+            context.fillStyle = '#ff8800';
+            context.fill();
+            context.stroke();
+            console.log('Drawing bar to:', currentPoint);
+        }
+    }
+
+    function endInteraction(event) {
+        if (isDragging && activeTool === 'bar') {
+            event.preventDefault();
+            const endPoint = getEventPosition(event);
+            console.log('Bar drawing ended at:', endPoint);
+
+            // Finalize bar (e.g., store it in an array of drawn bars for future interactions)
+            // Example: drawnBars.push({ start: startPoint, end: endPoint });
+
+            // Reset state
+            isDragging = false;
+            startPoint = null;
+            activeTool = null; // Reset the tool so bars are not created on subsequent clicks
+        }
+    }
+
+    // Add event listeners for both touch and mouse events
+    canvas.addEventListener('mousedown', startInteraction);
+    canvas.addEventListener('mousemove', moveInteraction);
+    canvas.addEventListener('mouseup', endInteraction);
+
+    canvas.addEventListener('touchstart', startInteraction);
+    canvas.addEventListener('touchmove', moveInteraction);
+    canvas.addEventListener('touchend', endInteraction);
+});
     </script>
 </head>
 <body data-new-gr-c-s-check-loaded="14.1208.0" data-gr-ext-installed="">
