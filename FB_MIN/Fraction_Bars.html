@@ -27,7 +27,7 @@
     <script src="./Fraction_Bars_files/FractionBarsCanvas.js" type="application/javascript" language="javascript"></script>
     <script src="./Fraction_Bars_files/fractionBars.js" type="application/javascript" language="javascript"></script>
     <script type="text/javascript">
-  document.addEventListener('DOMContentLoaded', function () {
+ document.addEventListener('DOMContentLoaded', function () {
     const canvas = document.getElementById('fbCanvas');
     const context = canvas.getContext('2d');
     let isDragging = false;
@@ -47,7 +47,15 @@
         console.log('Bar tool selected');
     });
 
-    // Normalize coordinates
+    // Color selection
+    document.querySelectorAll('.colorBlock').forEach(colorBlock => {
+        colorBlock.addEventListener('click', () => {
+            selectedColor = window.getComputedStyle(colorBlock).backgroundColor;
+            console.log('Selected color:', selectedColor);
+        });
+    });
+
+    // Normalize coordinates for mouse and touch events
     function getEventPosition(event) {
         if (event.touches && event.touches.length > 0) {
             return {
@@ -62,7 +70,7 @@
         }
     }
 
-    // Redraw existing bars
+    // Redraw all bars
     function redrawBars() {
         context.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
         for (const bar of drawnBars) {
@@ -95,7 +103,7 @@
             const width = currentPoint.x - startPoint.x;
             const height = currentPoint.y - startPoint.y;
 
-            // Draw the bar being created
+            // Draw the bar dynamically as it is dragged
             context.beginPath();
             context.rect(startPoint.x, startPoint.y, width, height);
             context.fillStyle = selectedColor;
@@ -130,10 +138,11 @@
             // Reset state
             isDragging = false;
             startPoint = null;
+            activeTool = null; // Unlatch the tool after creating one bar
         }
     }
 
-    // Add event listeners for both touch and mouse
+    // Add event listeners for both touch and mouse events
     canvas.addEventListener('mousedown', startInteraction);
     canvas.addEventListener('mousemove', moveInteraction);
     canvas.addEventListener('mouseup', endInteraction);
