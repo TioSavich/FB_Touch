@@ -27,7 +27,7 @@
     <script src="./Fraction_Bars_files/FractionBarsCanvas.js" type="application/javascript" language="javascript"></script>
     <script src="./Fraction_Bars_files/fractionBars.js" type="application/javascript" language="javascript"></script>
     <script type="text/javascript">
- document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function () {
     const canvas = document.getElementById('fbCanvas');
     const context = canvas.getContext('2d');
     let isDragging = false;
@@ -58,14 +58,16 @@
     // Normalize coordinates for mouse and touch events
     function getEventPosition(event) {
         if (event.touches && event.touches.length > 0) {
+            const rect = canvas.getBoundingClientRect();
             return {
-                x: event.touches[0].clientX - canvas.getBoundingClientRect().left,
-                y: event.touches[0].clientY - canvas.getBoundingClientRect().top,
+                x: event.touches[0].clientX - rect.left,
+                y: event.touches[0].clientY - rect.top,
             };
         } else {
+            const rect = canvas.getBoundingClientRect();
             return {
-                x: event.clientX - canvas.getBoundingClientRect().left,
-                y: event.clientY - canvas.getBoundingClientRect().top,
+                x: event.clientX - rect.left,
+                y: event.clientY - rect.top,
             };
         }
     }
@@ -118,13 +120,12 @@
     function endInteraction(event) {
         if (isDragging && activeTool === 'bar') {
             event.preventDefault();
-            const endPoint = getEventPosition(event);
 
-            // Calculate final dimensions
+            // Finalize the current bar
+            const endPoint = getEventPosition(event);
             const width = endPoint.x - startPoint.x;
             const height = endPoint.y - startPoint.y;
 
-            // Save the bar to the array
             drawnBars.push({
                 start: { x: startPoint.x, y: startPoint.y },
                 width: width,
@@ -147,9 +148,17 @@
     canvas.addEventListener('mousemove', moveInteraction);
     canvas.addEventListener('mouseup', endInteraction);
 
-    canvas.addEventListener('touchstart', startInteraction, { passive: false });
-    canvas.addEventListener('touchmove', moveInteraction, { passive: false });
-    canvas.addEventListener('touchend', endInteraction, { passive: false });
+    canvas.addEventListener('touchstart', (event) => {
+        startInteraction(event);
+    }, { passive: false });
+
+    canvas.addEventListener('touchmove', (event) => {
+        moveInteraction(event);
+    }, { passive: false });
+
+    canvas.addEventListener('touchend', (event) => {
+        endInteraction(event);
+    }, { passive: false });
 });
     </script>
 </head>
