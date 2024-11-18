@@ -1,29 +1,86 @@
 <!DOCTYPE html>
 <!-- saved from url=(0033)https://educn101.sitehost.iu.edu/ -->
-<html lang="en"><!-- test this will be a conflict --><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-	
-	<title>HTML 5: Fraction Bars</title>
-	<link rel="stylesheet" href="./Fraction_Bars_files/fractionBars.css" type="text/css">
-	<link rel="stylesheet" href="./Fraction_Bars_files/lang_eng.css" type="text/css">
-	<link rel="stylesheet" href="./Fraction_Bars_files/deneme.css" type="text/css">
-	<link rel="stylesheet" href="./Fraction_Bars_files/jquery-ui-1.10.3.custom.min.css" type="text/css">
-	<script src="./Fraction_Bars_files/jquery-1.9.1.min.js" type="text/javascript" language="javascript"></script>
-	<script src="./Fraction_Bars_files/jquery-ui-1.10.3.custom.min.js" type="text/javascript" language="javascript"></script>
-	<script src="./Fraction_Bars_files/cycle.js" type="text/javascript" language="javascript"></script>
-	<script src="./Fraction_Bars_files/FileSaver.min.js" type="text/javascript" language="javascript"></script>
-	<script src="./Fraction_Bars_files/Blob.js" type="text/javascript" language="javascript"></script>
-	<script src="./Fraction_Bars_files/utilities.js" type="application/javascript" language="javascript"></script>
-	<script src="./Fraction_Bars_files/Point.js" type="application/javascript" language="javascript"></script>
-	<script src="./Fraction_Bars_files/Bar.js" type="application/javascript" language="javascript"></script>
-	<script src="./Fraction_Bars_files/Mat.js" type="application/javascript" language="javascript"></script>
-	<script src="./Fraction_Bars_files/Split.js" type="application/javascript" language="javascript"></script>
-	<script src="./Fraction_Bars_files/SplitsWidget.js" type="application/javascript" language="javascript"></script>
-	<script src="./Fraction_Bars_files/Line.js" type="application/javascript" language="javascript"></script>
-	<script src="./Fraction_Bars_files/CanvasState.js" type="application/javascript" language="javascript"></script>
-	<script src="./Fraction_Bars_files/FractionBarsCanvas.js" type="application/javascript" language="javascript"></script>
-	<script src="./Fraction_Bars_files/fractionBars.js" type="application/javascript" language="javascript"></script>
-	<script src="./Fraction_Bars_files/hammer.min.js"></script> 
+<html lang="en"><!-- test this will be a conflict -->
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Fraction Bars</title>
+    <link rel="stylesheet" href="./Fraction_Bars_files/fractionBars.css" type="text/css">
+    <link rel="stylesheet" href="./Fraction_Bars_files/lang_eng.css" type="text/css">
+    <link rel="stylesheet" href="./Fraction_Bars_files/deneme.css" type="text/css">
+    <link rel="stylesheet" href="./Fraction_Bars_files/jquery-ui-1.10.3.custom.min.css" type="text/css">
+    <script src="./Fraction_Bars_files/jquery-1.9.1.min.js" type="text/javascript" language="javascript"></script>
+    <script src="./Fraction_Bars_files/jquery-ui-1.10.3.custom.min.js" type="text/javascript" language="javascript"></script>
+    <script src="./Fraction_Bars_files/cycle.js" type="text/javascript" language="javascript"></script>
+    <script src="./Fraction_Bars_files/FileSaver.min.js" type="text/javascript" language="javascript"></script>
+    <script src="./Fraction_Bars_files/Blob.js" type="text/javascript" language="javascript"></script>
+    <script src="./Fraction_Bars_files/utilities.js" type="application/javascript" language="javascript"></script>
+    <script src="./Fraction_Bars_files/Point.js" type="application/javascript" language="javascript"></script>
+    <script src="./Fraction_Bars_files/Bar.js" type="application/javascript" language="javascript"></script>
+    <script src="./Fraction_Bars_files/Mat.js" type="application/javascript" language="javascript"></script>
+    <script src="./Fraction_Bars_files/Split.js" type="application/javascript" language="javascript"></script>
+    <script src="./Fraction_Bars_files/SplitsWidget.js" type="application/javascript" language="javascript"></script>
+    <script src="./Fraction_Bars_files/Line.js" type="application/javascript" language="javascript"></script>
+    <script src="./Fraction_Bars_files/CanvasState.js" type="application/javascript" language="javascript"></script>
+    <script src="./Fraction_Bars_files/FractionBarsCanvas.js" type="application/javascript" language="javascript"></script>
+    <script src="./Fraction_Bars_files/fractionBars.js" type="application/javascript" language="javascript"></script>
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const canvas = document.getElementById('fbCanvas');
+            const context = canvas.getContext('2d');
+            let isDragging = false;
+
+            // Normalize event coordinates for touch and mouse
+            function getEventPosition(event) {
+                if (event.touches && event.touches.length > 0) {
+                    return {
+                        x: event.touches[0].clientX - canvas.offsetLeft,
+                        y: event.touches[0].clientY - canvas.offsetTop,
+                    };
+                } else {
+                    return {
+                        x: event.clientX - canvas.offsetLeft,
+                        y: event.clientY - canvas.offsetTop,
+                    };
+                }
+            }
+
+            // Event handlers
+            function startInteraction(event) {
+                event.preventDefault();
+                const position = getEventPosition(event);
+                isDragging = true;
+                console.log('Interaction started at:', position);
+                // Add your custom interaction logic here
+            }
+
+            function moveInteraction(event) {
+                if (!isDragging) return;
+                event.preventDefault();
+                const position = getEventPosition(event);
+                console.log('Dragging to:', position);
+                // Add your custom dragging logic here
+            }
+
+            function endInteraction(event) {
+                event.preventDefault();
+                isDragging = false;
+                console.log('Interaction ended');
+                // Add your custom interaction end logic here
+            }
+
+            // Add event listeners for both touch and mouse events
+            canvas.addEventListener('mousedown', startInteraction);
+            canvas.addEventListener('mousemove', moveInteraction);
+            canvas.addEventListener('mouseup', endInteraction);
+
+            canvas.addEventListener('touchstart', startInteraction);
+            canvas.addEventListener('touchmove', moveInteraction);
+            canvas.addEventListener('touchend', endInteraction);
+        });
+    </script>
 </head>
 <body data-new-gr-c-s-check-loaded="14.1208.0" data-gr-ext-installed="">
 <a class="skip-link" href="https://educn101.sitehost.iu.edu/#main">Skip to main content</a>
@@ -239,4 +296,16 @@
           </tr>
       </tbody>
    </table>
-</html>
+			&nbsp;&nbsp;
+
+
+		<p></p>
+
+	</div><div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"><div class="ui-dialog-buttonset"><button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Ok</span></button><button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Cancel</span></button></div></div></div><div class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-front ui-dialog-buttons ui-draggable ui-resizable" tabindex="-1" role="dialog" aria-describedby="dialog-file" aria-labelledby="ui-id-5" style="display: none; position: absolute;"><div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span id="ui-id-5" class="ui-dialog-title"></span><button class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-dialog-titlebar-close" role="button" aria-disabled="false" title="close"><span class="ui-button-icon-primary ui-icon ui-icon-closethick"></span><span class="ui-button-text">close</span></button></div><div class="c_choose_file ui-dialog-content ui-widget-content" id="dialog-file">
+		<p class="c_open_file">&nbsp;</p>
+		<p></p>
+		<p></p>
+		<input type="file" id="files" name="files[]" multiple="">
+<!--		<output id="list"></output> -->
+	</div>
+	</html>
