@@ -1,835 +1,829 @@
-// Copyright University of Massachusetts Dartmouth
+// Copyright University of Massachusetts Dartmouth 2014
 //
 // Designed and built by James P. Burke and Jason Orrill
 // Modified and developed by Hakan Sandir
 //
-// This JavaScript version of Fraction Bars is based on
+// This Javascript version of Fraction Bars is based on
 // the Transparent Media desktop version of Fraction Bars,
 // which in turn was based on the original TIMA Bars software
 // by John Olive and Leslie Steffe.
 // We thank them for allowing us to update that product.
 
-/* 
-// Note: Instead of using include_js, ensure all necessary JS files are included via <script> tags in your HTML.
-<script src="js/class/Point.js"></script>
-<script src="js/class/Bar.js"></script>
-<script src="js/class/Mat.js"></script>
-<script src="js/class/Split.js"></script>
-<script src="js/class/Line.js"></script>
-<script src="js/class/FractionBarsCanvas.js"></script>
-<script src="js/class/SplitsWidget.js"></script>
+
+
+
+/*
+// pull in our other files
+
+// TODO: figure out if this is really a desirable thing to do. I like it in
+// that this approach feels more like other languages, but there are issues
+// with the classes not being available when I expect them to be.
+
+include_js('class/Point.js', 'js/');
+include_js('class/Bar.js', 'js/');
+include_js('class/Mat.js', 'js/');
+include_js('class/Split.js', 'js/');
+include_js('class/Line.js', 'js/');
+include_js('class/FractionBarsCanvas.js', 'js/');
+
 */
 
-// Global Variables
-var point1 = null;
+var point1 = null ;
 var point2 = null;
-var fbContext = null;
+var fbContext = null ;
 var splitWidgetContext = null;
 var hiddenButtons = [];
-var hiddenButtonsName = [];
+var hiddenButtonsName=[];
+
 var fracEvent = null;
-var splitWidgetObj = null;
-var fbCanvasObj = null;
-var FBFileReader = null;
 
-// Flag for Bar Tool State
-var barToolActive = false;
-
-// Ensure Utilities and other classes are defined before this script runs
+splitWidgetObj = null;
 
 $(document).ready(function() {
-    // Initial Setup
-    hideButton("id_filetext");
-    hideButton("action_previous");
-    hideButton("action_next");
-
-    fbContext = $('#fbCanvas')[0].getContext('2d');
-    fbCanvasObj = new FractionBarsCanvas(fbContext);
-    splitWidgetContext = $('#split-display')[0].getContext('2d');
-    splitWidgetObj = new SplitsWidget(splitWidgetContext);
-
-    // Initialize Slider
-    $("#split-slider").slider({
-        change: function(event, ui) {
-            splitWidgetObj.handleSliderChange(event, ui);
-        }
-    });
-
-    // Handle Vertical/Horizontal Changes
-    $("#vert,#horiz").change(handleVertHorizChange);
-
-    function handleVertHorizChange(event) {
-        splitWidgetObj.handleVertHorizChange(event);
-    }
-
-    // File Selection Handlers
-    $("#files").change(handleFileSelect);
-    FBFileReader = new FileReader();
-
-    $("#id_filetext").change(handleListSelect);
-
-    // Canvas Double Click Handler
-    $('#fbCanvas').dblclick(function() {
-        var fbImg = fbContext.getImageData(0, 0, 1000, 600);
-        fbContext.clearRect(0, 0, 1000, 600);
-        fbContext.putImageData(fbImg, 0, 0);
-    });
-
-    // Canvas Mouse Events
-    $('#fbCanvas').mousemove(function(e) {
-        fracEvent = e;
-        updateMouseLoc(e, $(this));
-        updateMouseAction('mousemove');
-
-        var p = Point.createFromMouseEvent(e, $(this));
-
-        if (fbCanvasObj.currentAction === "manualSplit") {
-            fbCanvasObj.manualSplitPoint = p;
-            fbCanvasObj.refreshCanvas();
-        }
-
-        if (fbCanvasObj.mouseDownLoc !== null) {
-            fbCanvasObj.updateCanvas(p);
-        }
-    });
-
-    $('#fbCanvas').mousedown(function(e) {
-        fbCanvasObj.check_for_drag = true;
-        fbCanvasObj.cacheUndoState();
-
-        updateMouseLoc(e, $(this));
-        updateMouseAction('mousedown');
-        fbCanvasObj.mouseDownLoc = Point.createFromMouseEvent(e, $(this));
-        var b = fbCanvasObj.barClickedOn();
-        var m = fbCanvasObj.matClickedOn();
-
-        if (fbCanvasObj.currentAction === 'bar' || fbCanvasObj.currentAction === "mat") {
-            fbCanvasObj.saveCanvas();
-        } else if (fbCanvasObj.currentAction === 'repeat') {
-            fbCanvasObj.addUndoState();
-            b.repeat(fbCanvasObj.mouseDownLoc);
-            fbCanvasObj.refreshCanvas();
-        } else {
-            // Handle selection logic
-            if (b !== null) {
-                if ($.inArray(b, fbCanvasObj.selectedBars) === -1) { // Bar not already selected
-                    if (!Utilities.shiftKeyDown) {
-                        fbCanvasObj.clearSelection();
-                    }
-                    $.each(fbCanvasObj.selectedBars, function(index, bar) {
-                        bar.clearSplitSelection();
-                    });
-                    fbCanvasObj.barToFront(b);
-                    fbCanvasObj.selectedBars.push(b);
-                    b.isSelected = true;
-                    b.selectSplit(fbCanvasObj.mouseDownLoc);
-                } else { // Bar already selected
-                    $.each(fbCanvasObj.selectedBars, function(index, bar) {
-                        bar.clearSplitSelection();
-                    });
-                    if (!Utilities.shiftKeyDown) {
-                        b.selectSplit(fbCanvasObj.mouseDownLoc);
-                    } else {
-                        fbCanvasObj.removeBarFromSelection(b);
-                    }
-                    fbCanvasObj.barToFront(b);
-                }
-                if (fbCanvasObj.currentAction === "manualSplit") {
-                    fbCanvasObj.clearSelection();
-                }
-            } else if (m !== null) {
-                if ($.inArray(m, fbCanvasObj.selectedMats) === -1) { // Mat not already selected
-                    if (!Utilities.shiftKeyDown) {
-                        fbCanvasObj.clearSelection();
-                    }
-                    m.isSelected = true;
-                    fbCanvasObj.selectedMats.push(m);
-                } else { // Mat already selected
-                    if (Utilities.shiftKeyDown) {
-                        fbCanvasObj.removeMatFromSelection(m);
-                    }
-                }
-            } else {
-                fbCanvasObj.clearSelection();
-            }
-            fbCanvasObj.refreshCanvas();
-        }
-    });
-
-    $('#fbCanvas').mouseup(function(e) {
-        updateMouseLoc(e, $(this));
-        updateMouseAction('mouseup');
-
-        fbCanvasObj.mouseUpLoc = Point.createFromMouseEvent(e, $(this));
-
-        if (fbCanvasObj.currentAction === 'bar') {
-            fbCanvasObj.addUndoState();
-            fbCanvasObj.addBar();
-            fbCanvasObj.clear_selection_button();
-        } else if (fbCanvasObj.currentAction === 'mat') {
-            fbCanvasObj.addUndoState();
-            fbCanvasObj.addMat();
-            fbCanvasObj.clear_selection_button();
-        }
-
-        if (fbCanvasObj.found_a_drag) {
-            fbCanvasObj.finalizeCachedUndoState();
-            fbCanvasObj.check_for_drag = false;
-        }
-
-        fbCanvasObj.mouseUpLoc = null;
-        fbCanvasObj.mouseDownLoc = null;
-        fbCanvasObj.mouseLastLoc = null;
-    });
-
-    // Color Block Click Handlers
-    $('.colorBlock').click(function(e) {
-        fbCanvasObj.setFillColor($(this).css('background-color'));
-        $('.colorBlock').removeClass('colorSelected');
-        $(this).addClass('colorSelected');
-        fbCanvasObj.updateColorsOfSelectedBars();
-        fbCanvasObj.refreshCanvas();
-    });
-
-    $('.colorBlock1').click(function(e) {
-        $('#fbCanvas').css('background-color', $(this).css('background-color'));
-        $('.colorBlock1').removeClass('colorSelected');
-        $(this).addClass('colorSelected');
-    });
-
-    // Anchor Tag Click Handler
-    $('a').click(function(e) {
-        var thisId = $(this).attr('id');
-        if (!thisId) { return; }
-
-        var tool_on = false; // Temporarily tracks tool state
-
-        // Handle hiding mode
-        if (fbCanvasObj.currentAction === 'hide' && thisId.indexOf('hide') === -1) {
-            $(this).hide();
-            hiddenButtonsName.push(thisId);
-            hiddenButtons.push($(this));
-            return;
-        }
-
-        // Handle tool actions
-        if (thisId.startsWith('tool_')) {
-            var toolName = thisId.substring(5);
-            if (toolName === fbCanvasObj.currentAction) {
-                tool_on = false;
-                fbCanvasObj.clear_selection_button();
-                fbCanvasObj.currentAction = null; // Clear current action
-            } else {
-                fbCanvasObj.currentAction = toolName;
-                tool_on = true;
-                $(this).addClass('toolSelected').siblings().removeClass('toolSelected');
-            }
-            fbCanvasObj.handleToolUpdate(toolName, tool_on);
-            fbCanvasObj.refreshCanvas();
-        }
-
-        // Handle action buttons
-        if (thisId.startsWith('action_')) {
-            var actionName = thisId.substring(7);
-            fbCanvasObj.name = actionName;
-            fbCanvasObj.addUndoState();
-
-            switch(actionName) {
-                case 'copy':
-                    fbCanvasObj.copyBars();
-                    break;
-                case 'delete':
-                    fbCanvasObj.deleteSelectedBars();
-                    break;
-                case 'join':
-                    fbCanvasObj.joinSelected();
-                    break;
-                case 'setUnitBar':
-                    fbCanvasObj.setUnitBar();
-                    break;
-                case 'measure':
-                    fbCanvasObj.measureBars();
-                    break;
-                case 'make':
-                    fbCanvasObj.make();
-                    break;
-                case 'breakApart':
-                    fbCanvasObj.breakApartBars();
-                    break;
-                case 'clearSplits':
-                    fbCanvasObj.clearSplits();
-                    break;
-                case 'pullOutSplit':
-                    fbCanvasObj.pullOutSplit();
-                    break;
-                case 'undo':
-                    fbCanvasObj.undo();
-                    break;
-                case 'redo':
-                    fbCanvasObj.redo();
-                    break;
-                case 'save':
-                    fbCanvasObj.save();
-                    break;
-                case 'open':
-                    SaveScreen();
-                    resetFormElement($("#files"));
-                    fbCanvasObj.openFileDialog();
-                    break;
-                case 'print':
-                    fbCanvasObj.print_canvas();
-                    break;
-                case 'clearAll':
-                    SaveScreen();
-                    location.reload();
-                    break;
-                case 'show':
-                    showAllButtons();
-                    break;
-                case 'previous':
-                    previousSelectFile();
-                    break;
-                case 'next':
-                    nextSelectFile();
-                    break;
-                default:
-                    console.warn('Unknown action:', actionName);
-            }
-
-            fbCanvasObj.refreshCanvas();
-        }
-
-        // Handle window actions
-        if (thisId.startsWith('window_')) {
-            var windowAction = thisId.substring(7);
-            fbCanvasObj.addUndoState();
-            switch(windowAction) {
-                case 'label':
-                    fbCanvasObj.editLabel();
-                    break;
-                case 'split':
-                    fbCanvasObj.split(splitWidgetObj);
-                    break;
-                case 'iterate':
-                    fbCanvasObj.iterate();
-                    break;
-                case 'properties':
-                    fbCanvasObj.properties();
-                    break;
-                default:
-                    console.warn('Unknown window action:', windowAction);
-            }
-            fbCanvasObj.refreshCanvas();
-        }
-    });
-
-    // Keyboard Event Handlers
-    $(document).keydown(function(e) {
-        if (e.which === 16) { // Shift key
-            Utilities.shiftKeyDown = true;
-            fbCanvasObj.refreshCanvas();
-        }
-    });
-
-    $(document).keyup(function(e) {
-        if (e.which === 16) { // Shift key
-            Utilities.shiftKeyDown = false;
-            fbCanvasObj.refreshCanvas();
-        }
-
-        // Ctrl + P
-        if (e.ctrlKey && e.keyCode === 80) {
-            fbCanvasObj.properties();
-            fbCanvasObj.refreshCanvas();
-        }
-
-        // Ctrl + S
-        if (e.ctrlKey && e.keyCode === 83) {
-            fbCanvasObj.save();
-            fbCanvasObj.refreshCanvas();
-        }
-
-        // Ctrl + H
-        if (e.ctrlKey && e.keyCode === 72) {
-            if (Utilities.ctrlKeyDown) {
-                showButton("tool_hide");
-                showButton("action_show");
-                Utilities.ctrlKeyDown = false;
-            } else {
-                Utilities.ctrlKeyDown = true;
-                hideButton("tool_hide");
-                hideButton("action_show");
-            }
-            fbCanvasObj.clear_selection_button();
-            fbCanvasObj.refreshCanvas();
-        }
-
-        // Ctrl + Delete
-        if (e.ctrlKey && e.keyCode === 46) {
-            fbCanvasObj.addUndoState();
-            fbCanvasObj.deleteSelectedBars();
-            fbCanvasObj.refreshCanvas();
-        }
-    });
-
-    // Label Input Handlers
-    $('#labelInput').keyup(function(e) {
-        if (e.which === 13) { // Enter key
-            fbCanvasObj.saveLabel($('#labelInput').val(), Utilities.USE_CURRENT_SELECTION);
-            fbCanvasObj.hideEditLabel();
-            fbCanvasObj.refreshCanvas();
-        }
-    });
-
-    $('#labelInput').blur(function() {
-        fbCanvasObj.saveLabel($('#labelInput').val(), Utilities.USE_LAST_SELECTION);
-        fbCanvasObj.hideEditLabel();
-    });
-
-    // Dialog Initialization
-    $("#dialog-splits").dialog({
-        height: 300,
-        width: 400,
-        resizable: false,
-        modal: true,
-        buttons: [
-            {
-                text: "Ok",
-                click: function() {
-                    var num_splits = $("#split-slider-field").val();
-                    var whole = $("input[name='whole_part']:checked").val();
-                    var direction = Utilities.flag[1] ? $("input[name='vert_horiz']:checked").val() : "Vertical";
-
-                    fbCanvasObj.makeSplits(num_splits, direction, whole);
-                    $(this).dialog("close");
-                }
-            },
-            {
-                text: "Cancel",
-                click: function() {
-                    $(this).dialog("close");
-                }
-            }
-        ],
-        autoOpen: false
-    });
-
-    $("#dialog-properties").dialog({
-        height: 500,
-        width: 400,
-        resizable: false,
-        modal: true,
-        buttons: [
-            {
-                text: "Ok",
-                click: function() {
-                    var create_checked = $("input[name='create']:checked").val();
-                    Utilities.flag[0] = (create_checked === "Same");
-
-                    var horiz_checked = $("input[name='two_split']:checked").val();
-                    if (horiz_checked === "One_horiz") {
-                        Utilities.flag[1] = false;
-                        $("#radio_vert").hide();
-                    } else if (horiz_checked === "Two_horiz") {
-                        Utilities.flag[1] = true;
-                        $("#radio_vert").show();
-                    }
-
-                    var iterate_way_checked = $("input[name='two_ittr']:checked").val();
-                    if (iterate_way_checked === "One_way") {
-                        Utilities.flag[2] = false;
-                        $("#iterate_vert-horiz").hide();
-                    } else if (iterate_way_checked === "Two_way") {
-                        Utilities.flag[2] = true;
-                        $("#iterate_vert-horiz").show();
-                    }
-
-                    var language_checked = $("input[name='lang']:checked").val();
-                    switch(language_checked) {
-                        case 'lang_eng':
-                            Utilities.flag[3] = false;
-                            $('#stylesheet').attr('href', 'css/lang_eng.css');
-                            break;
-                        case 'lang_tur':
-                            Utilities.flag[3] = true;
-                            $('#stylesheet').attr('href', 'css/lang_tur.css');
-                            break;
-                        default:
-                            console.warn('Unknown language selected');
-                    }
-
-                    $(this).dialog("close");
-                }
-            },
-            {
-                text: "Cancel",
-                click: function() {
-                    $(this).dialog("close");
-                }
-            }
-        ],
-        autoOpen: false
-    });
-
-    $("#dialog-iterate").dialog({
-        height: 300,
-        width: 400,
-        resizable: false,
-        modal: true,
-        buttons: [
-            {
-                text: "Ok",
-                click: function() {
-                    var num_iterate = $("#iterate-field").val();
-                    var direction = Utilities.flag[2] ? $("input[name='vert_horiz']:checked").val() : "Horizontal";
-                    fbCanvasObj.makeIterations(num_iterate, direction);
-                    $(this).dialog("close");
-                }
-            },
-            {
-                text: "Cancel",
-                click: function() {
-                    $(this).dialog("close");
-                }
-            }
-        ],
-        autoOpen: false
-    });
-
-    $("#dialog-make").dialog({
-        height: 300,
-        width: 400,
-        resizable: false,
-        modal: true,
-        buttons: [
-            {
-                text: "Ok",
-                click: function() {
-                    var num_whole = parseFloat($("#whole-field").val()) || 0;
-                    var num_num = parseFloat($("#num-field").val()) || 0;
-                    var num_denum = parseFloat($("#denum-field").val()) || 1;
-
-                    var num_frac = num_whole + (num_num / num_denum);
-                    if (!num_frac) {
-                        alert("Please input a valid fraction!");
-                    } else {
-                        fbCanvasObj.makeMake(num_frac);
-                    }
-
-                    // Clear input fields
-                    $("#whole-field").val("");
-                    $("#num-field").val("");
-                    $("#denum-field").val("");
-                    $(this).dialog("close");
-                }
-            },
-            {
-                text: "Cancel",
-                click: function() {
-                    $(this).dialog("close");
-                }
-            }
-        ],
-        autoOpen: false
-    });
-
-    $("#dialog-hidden").dialog({
-        height: 250,
-        width: 300,
-        modal: true,
-        buttons: [
-            {
-                text: "Ok",
-                click: function() {
-                    // Add any specific functionality if needed
-                    $(this).dialog("close");
-                }
-            },
-            {
-                text: "Cancel",
-                click: function() {
-                    $(this).dialog("close");
-                }
-            }
-        ],
-        autoOpen: false
-    });
-
-    $("#dialog-file").dialog({
-        height: 250,
-        width: 300,
-        modal: true,
-        buttons: [
-            {
-                text: "Cancel",
-                click: function() {
-                    $(this).dialog("close");
-                }
-            }
-        ],
-        autoOpen: false
-    });
-
-    // Hammer.js Integration
-    var fbCanvas = document.getElementById('fbCanvas');
-    var hammertime = new Hammer(fbCanvas);
-
-    // Double Tap Handler
-    hammertime.on('doubletap', function(e) {
-        var fbImg = fbContext.getImageData(0, 0, 1000, 600);
-        fbContext.clearRect(0, 0, 1000, 600);
-        fbContext.putImageData(fbImg, 0, 0);
-    });
-
-    // Pan (Drag) Handlers
-    hammertime.on('pan', function(e) {
-        var p = new Point();
-        p.x = Math.round(e.center.x - $('#fbCanvas').position().left + window.pageXOffset);
-        p.y = Math.round(e.center.y - $('#fbCanvas').position().top + window.pageYOffset);
-
-        if (fbCanvasObj.currentAction === "manualSplit") {
-            fbCanvasObj.manualSplitPoint = p;
-            fbCanvasObj.refreshCanvas();
-        }
-
-        if (fbCanvasObj.mouseDownLoc !== null) {
-            fbCanvasObj.updateCanvas(p);
-        }
-    });
-
-    hammertime.on('panstart', function(e) {
-        fbCanvasObj.check_for_drag = true;
-        fbCanvasObj.cacheUndoState();
-
-        updateMouseAction('mousedown');
-
-        fbCanvasObj.mouseDownLoc = new Point();
-        fbCanvasObj.mouseDownLoc.x = Math.round(e.center.x - $('#fbCanvas').position().left + window.pageXOffset);
-        fbCanvasObj.mouseDownLoc.y = Math.round(e.center.y - $('#fbCanvas').position().top + window.pageYOffset);
-
-        var b = fbCanvasObj.barClickedOn();
-        var m = fbCanvasObj.matClickedOn();
-
-        if (fbCanvasObj.currentAction === "bar" && !barToolActive) {
-            fbCanvasObj.saveCanvas();
-            barToolActive = true; // Activate the 'bar' tool
-        }
-
-        if (b !== null) {
-            fbCanvasObj.selected_bar = b;
-            fbCanvasObj.refreshCanvas();
-        } else if (m !== null) {
-            fbCanvasObj.selected_mat = m;
-            fbCanvasObj.refreshCanvas();
-        } else if (fbCanvasObj.currentAction === "partition") {
-            fbCanvasObj.saveCanvas();
-            fbCanvasObj.partitionPoint = new Point();
-            fbCanvasObj.partitionPoint.x = Math.round(e.center.x - $('#fbCanvas').position().left + window.pageXOffset);
-            fbCanvasObj.partitionPoint.y = Math.round(e.center.y - $('#fbCanvas').position().top + window.pageYOffset);
-            fbCanvasObj.partition();
-        } else if (fbCanvasObj.currentAction === "bar") {
-            fbCanvasObj.saveCanvas();
-            fbCanvasObj.newBarMouseDownLoc = new Point();
-            fbCanvasObj.newBarMouseDownLoc.x = Math.round(e.center.x - $('#fbCanvas').position().left + window.pageXOffset);
-            fbCanvasObj.newBarMouseDownLoc.y = Math.round(e.center.y - $('#fbCanvas').position().top + window.pageYOffset);
-        } else if (fbCanvasObj.currentAction === "mat") {
-            fbCanvasObj.saveCanvas();
-            fbCanvasObj.newMatMouseDownLoc = new Point();
-            fbCanvasObj.newMatMouseDownLoc.x = Math.round(e.center.x - $('#fbCanvas').position().left + window.pageXOffset);
-            fbCanvasObj.newMatMouseDownLoc.y = Math.round(e.center.y - $('#fbCanvas').position().top + window.pageYOffset);
-        } else if (fbCanvasObj.currentAction === "eraser") {
-            fbCanvasObj.saveCanvas();
-            fbCanvasObj.erase(Math.round(e.center.x - $('#fbCanvas').position().left + window.pageXOffset), Math.round(e.center.y - $('#fbCanvas').position().top + window.pageYOffset));
-        }
-    });
-
-    hammertime.on('panend', function(e) {
-        updateMouseAction('mouseup');
-        var p = new Point();
-        p.x = Math.round(e.center.x - $('#fbCanvas').position().left + window.pageXOffset);
-        p.y = Math.round(e.center.y - $('#fbCanvas').position().top + window.pageYOffset);
-
-        fbCanvasObj.mouseUpLoc = p;
-
-        if (fbCanvasObj.currentAction === 'bar' && barToolActive) {
-            fbCanvasObj.addUndoState();
-            fbCanvasObj.addBar();
-            fbCanvasObj.clear_selection_button();
-            barToolActive = false; // Deactivate the 'bar' tool
-        }
-
-        if (fbCanvasObj.currentAction === "mat") {
-            fbCanvasObj.addUndoState();
-            fbCanvasObj.addMat();
-        } else if (fbCanvasObj.currentAction === "eraser") {
-            fbCanvasObj.addUndoState();
-        } else if (fbCanvasObj.currentAction === "move") {
-            fbCanvasObj.moveSelectedItems(p);
-            fbCanvasObj.addUndoState();
-        } else if (fbCanvasObj.currentAction === "manualSplit") {
-            fbCanvasObj.manualSplit();
-            fbCanvasObj.addUndoState();
-        }
-
-        fbCanvasObj.mouseDownLoc = null;
-        fbCanvasObj.check_for_drag = false;
-    });
+//first attempt
+	hideButton("id_filetext");
+	hideButton("action_previous");
+	hideButton("action_next");
+
+
+
+	fbContext = $('#fbCanvas')[0].getContext( '2d' ) ;
+	fbCanvasObj = new FractionBarsCanvas(fbContext);
+	splitWidgetContext = $('#split-display')[0].getContext('2d');
+	var splitWidgetObj = new SplitsWidget(splitWidgetContext);
+
+
+	$("#split-slider").slider({
+		change: function(event,ui) {
+			splitWidgetObj.handleSliderChange(event, ui);
+		}
+	});
+
+	$("#vert,#horiz").change(handleVertHorizChange);
+
+	function handleVertHorizChange(event) {
+		splitWidgetObj.handleVertHorizChange(event);
+	}
+
+
+
+
+	$( "#files" ).change(handleFileSelect);
+	FBFileReader = new FileReader();
+
+
+
+
+//First attempt
+	$( "#id_filetext" ).change(handleListSelect);
+//
+
+
+	$('#fbCanvas').dblclick(function() {
+		var fbImg = fbContext.getImageData(0,0,1000,600) ;
+		fbContext.clearRect(0,0,1000,600) ;
+//		fbContext.restore() ;
+		fbContext.putImageData(fbImg,0,0);
+	});
+
+	$('#fbCanvas').mousemove(function(e) {
+		fracEvent = e;
+		updateMouseLoc(e, $(this));
+		updateMouseAction('mousemove');
+
+		var p = Point.createFromMouseEvent(e, $(this)) ;
+
+		if (fbCanvasObj.currentAction == "manualSplit") {
+			fbCanvasObj.manualSplitPoint = p;
+			fbCanvasObj.refreshCanvas();
+		}
+
+		if(fbCanvasObj.mouseDownLoc !== null) {
+			fbCanvasObj.updateCanvas(p);
+		}
+
+//		if (fbCanvasObj.currentAction == "manualSplit") {
+//			fbCanvasObj.manualSplitXORDraw(p);
+//		}
+
+	});
+
+	$('#fbCanvas').mousedown(function(e) {
+
+		fbCanvasObj.check_for_drag = true;
+		fbCanvasObj.cacheUndoState();
+
+		updateMouseLoc(e, $(this));
+		updateMouseAction('mousedown');
+		fbCanvasObj.mouseDownLoc = Point.createFromMouseEvent(e, $(this)) ;
+		var b = fbCanvasObj.barClickedOn() ;
+		var m = fbCanvasObj.matClickedOn() ;
+
+		if( (fbCanvasObj.currentAction == 'bar') || (fbCanvasObj.currentAction == "mat")) {
+			fbCanvasObj.saveCanvas() ;
+		} else if( fbCanvasObj.currentAction == 'repeat' ) {
+			fbCanvasObj.addUndoState();
+			b.repeat(fbCanvasObj.mouseDownLoc);
+			fbCanvasObj.refreshCanvas();
+		} else {
+			// The click is being used to update the selected bars
+			if( b !== null ) {
+				if( $.inArray(b, fbCanvasObj.selectedBars) == -1) { // clicked on bar is not already selected
+					if( !Utilities.shiftKeyDown ) {
+						fbCanvasObj.clearSelection();
+					}
+					$.each( fbCanvasObj.selectedBars, function(index, bar) {
+						bar.clearSplitSelection();
+					});
+					fbCanvasObj.barToFront(b);
+					fbCanvasObj.selectedBars.push(b);
+					b.isSelected = true;
+					b.selectSplit(fbCanvasObj.mouseDownLoc);
+				} else {											// clicked bar is already selected
+					$.each( fbCanvasObj.selectedBars, function(index, bar) {
+						bar.clearSplitSelection();
+					});
+					if( !Utilities.shiftKeyDown ) {
+						b.selectSplit(fbCanvasObj.mouseDownLoc);
+					} else {
+						fbCanvasObj.removeBarFromSelection(b);
+					}
+					fbCanvasObj.barToFront(b);
+				}
+				if (fbCanvasObj.currentAction == "manualSplit") {
+					fbCanvasObj.clearSelection();
+				}
+			} else if( m !== null ) {
+				if( $.inArray(m, fbCanvasObj.selectedMats) == -1) { // clicked on mat is not already selected
+					if( !Utilities.shiftKeyDown ) {
+						fbCanvasObj.clearSelection();
+					}
+					m.isSelected = true;
+					fbCanvasObj.selectedMats.push(m);
+				} else {  // Clicked on mat is already selected
+					if( Utilities.shiftKeyDown ) {
+						fbCanvasObj.removeMatFromSelection(m);
+					}
+				}
+			} else {
+				fbCanvasObj.clearSelection();
+			}
+			fbCanvasObj.refreshCanvas();
+		}
+	}) ;
+
+	$('#fbCanvas').mouseup(function(e) {
+		updateMouseLoc(e, $(this));
+		updateMouseAction('mouseup');
+
+		fbCanvasObj.mouseUpLoc = Point.createFromMouseEvent(e, $(this)) ;
+
+
+		if( fbCanvasObj.currentAction == 'bar' ) {
+			fbCanvasObj.addUndoState();
+			fbCanvasObj.addBar() ;
+			fbCanvasObj.clear_selection_button ();
+
+		} else if (fbCanvasObj.currentAction == 'mat') {
+			fbCanvasObj.addUndoState();
+			fbCanvasObj.addMat();
+			fbCanvasObj.clear_selection_button ();
+		}
+
+
+		if (fbCanvasObj.found_a_drag){
+			fbCanvasObj.finalizeCachedUndoState();
+			fbCanvasObj.check_for_drag = false;
+		}
+
+		fbCanvasObj.mouseUpLoc = null ;
+		fbCanvasObj.mouseDownLoc = null ;
+		fbCanvasObj.mouseLastLoc = null ;
+
+	}) ;
+
+	$('.colorBlock').click(function(e) {
+		fbCanvasObj.setFillColor( $(this).css('background-color'));
+		$('.colorBlock').removeClass('colorSelected');
+		$(this).addClass('colorSelected');
+		fbCanvasObj.updateColorsOfSelectedBars();
+		fbCanvasObj.refreshCanvas();
+	}) ;
+
+//first attempt
+	$('.colorBlock1').click(function(e) {
+document.getElementById('fbCanvas').style.backgroundColor = $(this).css('background-color');
+		$('.colorBlock1').removeClass('colorSelected');
+		$(this).addClass('colorSelected');
+	}) ;
+//
+
+
+	$('a').click(function(e) {
+
+		var thisId = $(this).attr('id') ;
+		if (thisId === null) { return; }
+		var tool_on = false; // just temporarily keeps track of whether we're turning a tool on or off
+
+//		First, handle any hiding, if we're in that mode
+		if ((fbCanvasObj.currentAction == 'hide') && (thisId.indexOf('hide') == -1) ) {
+			$(this).hide();
+			hiddenButtonsName.push(thisId);
+			hiddenButtons.push($(this));
+			return;
+		}
+
+		if( thisId.indexOf('tool_') > -1 ) {
+
+			var toolName = thisId.substr(5,thisId.length);
+			if( toolName.toString() == fbCanvasObj.currentAction.toString() ) {
+				tool_on = false;
+				fbCanvasObj.clear_selection_button ();
+			} else {
+				fbCanvasObj.currentAction = thisId.substr(5,thisId.length) ;
+				tool_on = true;
+				$(this).addClass('toolSelected');
+			}
+			fbCanvasObj.handleToolUpdate(toolName, tool_on);
+			fbCanvasObj.refreshCanvas();
+		}
+
+		if( thisId.indexOf('action_') > -1 ) {
+		fbCanvasObj.name=thisId.substr( 7, thisId.length );
+			switch( thisId.substr( 7, thisId.length )) {
+				case 'copy':
+					fbCanvasObj.addUndoState();
+					fbCanvasObj.copyBars() ;
+					fbCanvasObj.refreshCanvas() ;
+					break ;
+				case 'delete':
+					fbCanvasObj.addUndoState();
+					fbCanvasObj.deleteSelectedBars() ;
+					fbCanvasObj.refreshCanvas() ;
+					break ;
+				case 'join':
+					fbCanvasObj.addUndoState();
+					fbCanvasObj.joinSelected() ;
+					fbCanvasObj.refreshCanvas() ;
+					break ;
+				case 'setUnitBar':
+					fbCanvasObj.addUndoState();
+					fbCanvasObj.setUnitBar() ;
+					fbCanvasObj.refreshCanvas() ;
+					break ;
+				case 'measure':
+					fbCanvasObj.addUndoState();
+					fbCanvasObj.measureBars() ;
+					fbCanvasObj.refreshCanvas() ;
+					break ;
+				case 'make':
+					fbCanvasObj.addUndoState();
+					fbCanvasObj.make() ;
+					fbCanvasObj.refreshCanvas() ;
+					break ;
+				case 'breakApart':
+					fbCanvasObj.addUndoState();
+					fbCanvasObj.breakApartBars() ;
+					fbCanvasObj.refreshCanvas() ;
+					break ;
+				case 'clearSplits':
+					fbCanvasObj.addUndoState();
+					fbCanvasObj.clearSplits() ;
+					fbCanvasObj.refreshCanvas();
+					break ;
+				case 'pullOutSplit':
+					fbCanvasObj.addUndoState();
+					fbCanvasObj.pullOutSplit();
+					fbCanvasObj.refreshCanvas();
+					break ;
+				case 'undo':
+					fbCanvasObj.undo();
+					fbCanvasObj.refreshCanvas() ;
+					break ;
+				case 'redo':
+					fbCanvasObj.redo();
+					fbCanvasObj.refreshCanvas();
+					break;
+				case 'save':
+					fbCanvasObj.save();
+					break;
+				case 'open':
+					SaveScreen();
+					resetFormElement($("#files"));
+					fbCanvasObj.openFileDialog();
+					break;
+					case 'print':
+					fbCanvasObj.print_canvas();
+					break ;
+				case 'clearAll':
+				    SaveScreen();
+					location.reload();
+					break;
+				case 'show':
+					showAllButtons();
+					break;
+					case 'previous':
+					previousSelectFile();
+					break;
+						case 'next':
+						nextSelectFile();
+							break;
+
+			}
+
+		}
+
+		if( thisId.indexOf('window_') > -1 ) {
+			switch( thisId.substr( 7, thisId.length )) {
+				case 'label':
+					fbCanvasObj.addUndoState();
+					fbCanvasObj.editLabel() ;
+					break ;
+				case 'split':
+					fbCanvasObj.addUndoState();
+					fbCanvasObj.split(splitWidgetObj) ;
+					break ;
+				case 'iterate':
+					fbCanvasObj.addUndoState();
+					fbCanvasObj.iterate() ;
+					break ;
+				case 'properties':
+					fbCanvasObj.properties();
+					break ;
+			}
+		}
+
+	}) ;
+
+
+	$(document).keydown(function(e) {
+
+		if( e.which == 16 ) {
+			Utilities.shiftKeyDown = true ;
+			fbCanvasObj.refreshCanvas();
+		}
+	});
+	$(document).keyup(function(e) {
+		if( e.which == 16 ) {
+			Utilities.shiftKeyDown = false ;
+			fbCanvasObj.refreshCanvas();
+		}
+
+		if( e.ctrlKey && e.keyCode==80) {
+			fbCanvasObj.properties();
+			fbCanvasObj.refreshCanvas();
+		}
+
+		if( e.ctrlKey && e.keyCode==83) {
+			fbCanvasObj.save();
+			fbCanvasObj.refreshCanvas();
+		}
+
+		if( e.ctrlKey && e.keyCode==72) {
+			//$( "#dialog-hidden" ).dialog('open');
+			if(Utilities.ctrlKeyDown){
+				showButton("tool_hide");
+				showButton("action_show");
+				Utilities.ctrlKeyDown=false;
+			} else {
+				Utilities.ctrlKeyDown =true;
+				hideButton("tool_hide");
+				hideButton("action_show");
+			}
+			fbCanvasObj.clear_selection_button();
+			fbCanvasObj.refreshCanvas();
+		}
+		if( e.ctrlKey && e.keyCode==46) {
+			fbCanvasObj.addUndoState();
+			fbCanvasObj.deleteSelectedBars() ;
+			fbCanvasObj.refreshCanvas() ;
+		}
+
+	});
+
+	$('#labelInput').keyup( function( e ) {
+		if( e.which == 13 ) {
+			fbCanvasObj.saveLabel( $('#labelInput').val(), Utilities.USE_CURRENT_SELECTION ) ;
+			fbCanvasObj.hideEditLabel() ;
+			fbCanvasObj.refreshCanvas();
+		}
+	}) ;
+
+	// This gets triggered after we have already cleared out the selection,
+	// so we need to have a way to be sure the LAST selection gets the label.
+	$('#labelInput').blur( function() {
+		fbCanvasObj.saveLabel( $('#labelInput').val(), Utilities.USE_LAST_SELECTION ) ;
+		fbCanvasObj.hideEditLabel() ;
+	}) ;
+
+
+
+	$( "#dialog-splits" ).dialog({
+			height: 300,
+			width: 400,
+			resizable: false,
+			modal: true,
+			buttons: [
+				{
+					text: "Ok",
+					click: function() {
+						var num_splits = $("#split-slider-field").val();
+						var whole = $("input[type='radio'][name='whole_part']:checked").val();
+						var direction="Vertical";
+						if(Utilities.flag[1])
+						{
+							direction =  $("input[type='radio'][name='vert_horiz']:checked").val();
+						}
+
+						fbCanvasObj.makeSplits(num_splits, direction, whole);
+						$( this ).dialog( "close" );
+					}
+				},
+				{
+					text: "Cancel",
+					click: function() {
+						$( this ).dialog( "close" );
+					}
+				}
+			],
+			autoOpen: false
+	});
+
+	$( "#dialog-properties" ).dialog({
+			height: 500,
+			width: 400,
+			resizable: false,
+			modal: true,
+			buttons: [
+				{
+					text: "Ok",
+					click: function() {
+						var create_checked = $("input[type='radio'][name='create']:checked").val();
+						splitWidgetObj.vertical=true;
+						if (create_checked == "Same") {
+							Utilities.flag[0]= true;
+						} else if (create_checked == "New") {
+							Utilities.flag[0]= false;}
+
+						var horiz_checked = $("input[type='radio'][name='two_split']:checked").val();
+						if (horiz_checked == "One_horiz") {
+							Utilities.flag[1]= false;
+							document.getElementById("radio_vert").style.display = 'none';
+						} else if (horiz_checked == "Two_horiz") {
+							Utilities.flag[1]= true;
+							document.getElementById("radio_vert").style.display = 'block';
+						}
+
+						var itterate_way_checked = $("input[type='radio'][name='two_ittr']:checked").val();
+						if (itterate_way_checked == "One_way") {
+							Utilities.flag[2]= false;
+							document.getElementById("iterate_vert-horiz").style.display = 'none';
+						} else if (itterate_way_checked == "Two_way") {
+							Utilities.flag[2]= true;
+							document.getElementById("iterate_vert-horiz").style.display = 'block';
+						}
+
+						var language_checked = $("input[type='radio'][name='lang']:checked").val();
+						switch(language_checked) {
+						case 'lang_eng':
+							Utilities.flag[3]= false;
+							document.getElementById('stylesheet').href='css/lang_eng.css';
+							break ;
+						case 'lang_tur':
+							Utilities.flag[3]= true;
+							document.getElementById('stylesheet').href='css/lang_tur.css';
+							break ;
+						}
+
+						$( this ).dialog( "close" );
+					}
+				},
+				{
+					text: "Cancel",
+					click: function() {
+						$( this ).dialog( "close" );
+					}
+				}
+			],
+			autoOpen: false
+	});
+
+
+
+	$( "#dialog-iterate" ).dialog({
+			height: 300,
+			width: 400,
+			resizable: false,
+			modal: true,
+			buttons: [
+				{
+					text: "Ok",
+					click: function() {
+						var num_iterate = $("#iterate-field").val();
+						if(!Utilities.flag[2])
+						{
+							direction="Horizontal";
+						}
+						else
+						{
+							var direction =  $("input[type='radio'][name='vert_horiz']:checked").val();
+						}
+						fbCanvasObj.makeIterations(num_iterate, direction);
+						$( this ).dialog( "close" );
+					}
+				},
+				{
+					text: "Cancel",
+					click: function() {
+						$( this ).dialog( "close" );
+					}
+				}
+			],
+			autoOpen: false
+	});
+
+$( "#dialog-make" ).dialog({
+			height: 300,
+			width: 400,
+			resizable: false,
+			modal: true,
+			buttons: [
+				{
+					text: "Ok",
+					click: function() {
+						var num_whole = parseFloat($("#whole-field").val());
+						var num_num = parseFloat($("#num-field").val());
+						var num_denum = parseFloat($("#denum-field").val());
+
+						if(!num_whole)
+						{
+							num_whole=0;
+						}
+						if(!num_denum)
+						{
+							num_denum=1;
+						}
+						if(!num_num)
+						{
+							num_num=0;
+						}
+						num_frac=num_whole + (num_num/num_denum);
+						if (!num_frac)
+						{
+							alert("Please input fraction!");
+						}
+						else
+						{
+							fbCanvasObj.makeMake(num_frac);
+						}
+
+						document.getElementById('whole-field').value="";
+						document.getElementById('num-field').value="";
+						document.getElementById('denum-field').value="";
+						$( this ).dialog( "close" );
+					}
+				},
+				{
+					text: "Cancel",
+					click: function() {
+						$( this ).dialog( "close" );
+					}
+				}
+			],
+			autoOpen: false
+	});
+
+	$( "#split-slider" ).slider({
+			value:2,
+			min: 2,
+			max: 20,
+			step: 1,
+			slide: function( event, ui ) {
+				$( "#split-slider-field" ).val( ui.value );
+			}
+	});
+
+	$( "#dialog-hidden" ).dialog({
+			height: 250,
+			width: 300,
+			modal: true,
+			buttons: [
+				{
+					text: "Ok",
+					click: function() {
+//////////////////
+
+						$( this ).dialog( "close" );
+					}
+				},
+				{
+					text: "Cancel",
+					click: function() {
+						$( this ).dialog( "close" );
+					}
+				}
+			],
+			autoOpen: false
+	});
+
+	$( "#dialog-file" ).dialog({
+			height: 250,
+			width: 300,
+			modal: true,
+			buttons: [
+				{
+					text: "Cancel",
+					click: function() {
+						$( this ).dialog( "close" );
+					}
+				}
+			],
+			autoOpen: false
+	});
+
 });
 
-// Utility Functions
-
 function showAllButtons() {
-    while (hiddenButtons.length > 0) {
-        var thing = hiddenButtons.pop();
-        thing.show();
-    }
-    hiddenButtonsName = [];
+	while(hiddenButtons.length >0) {
+		thing = hiddenButtons.pop();
+		thing.show();
+	}
+	hiddenButtons = [];
+	hiddenButtonsName = [];
 }
 
 function SaveScreen() {
-    var r = window.confirm("Do you want to save?");
-    if (r === true) {
-        fbCanvasObj.save();
-    }
+	var r=window.confirm("Do you want to save?");
+	if (r==true)
+	{
+		fbCanvasObj.save();
+	}
 }
 
 function showButton(item) {
-    var index = hiddenButtonsName.indexOf(item);
-    if (index > -1) {
-        hiddenButtons[index].show();
-        hiddenButtons.splice(index, 1);
-        hiddenButtonsName.splice(index, 1);
+    var cnt = 0;
+    while(hiddenButtonsName.length >0) {
+        if (hiddenButtonsName[cnt] === item) {
+            var rem_but1=hiddenButtonsName.splice(cnt, 1);
+            hiddenButtons.splice(cnt, 1);
+        }
+        else {
+        	cnt++;
+        }
+		if (hiddenButtonsName.length === cnt) {
+			$(document.getElementById(rem_but1)).show();
+			break;
+		}
     }
 }
 
 function hideButton(item) {
-    if (hiddenButtonsName.indexOf(item) < 0) {
-        var hidden = $('#' + item);
-        hidden.hide();
-        hiddenButtonsName.push(item);
-        hiddenButtons.push(hidden);
-    }
+	if (hiddenButtonsName.indexOf(item)<0) {
+		hidden=document.getElementById(item) ;
+    $(hidden).hide();
+ 		hiddenButtonsName.push(item);
+ 		hiddenButtons.push($(hidden));
+	}
 }
 
 function handleFileSelect(event) {
-    $("#dialog-file").dialog("close");
-    var files = event.target.files;
-    if (files.length === 0) { return; }
+	$( "#dialog-file" ).dialog("close");
+	var files = event.target.files;
+	if (files.length === 0) {return;}
 
-    Utilities.file_list = files;
-    Utilities.file_index = 0;
+//First attempt
+	Utilities.file_list=event.target.files;
+  Utilities.file_index=0;
 
-    var aFile = files[0];
-    readFileOpen(aFile);
+	var aFile = files[0];
+	readFileOpen(aFile);
+  //
 }
 
+//First attempt
 function handleListSelect(event) {
-    Utilities.file_index = $('#id_filetext').prop('selectedIndex');
-    var a_files = Utilities.file_list;
+  Utilities.file_index= document.getElementById('id_filetext').selectedIndex;
+	a_files = Utilities.file_list;
 
-    fbCanvasObj.save();
+//	SaveScreen();
+	fbCanvasObj.save();
 
-    var aFileIndex = Utilities.file_index;
-    var aFile = a_files[aFileIndex];
-    readFileOpen(aFile);
+	var aFileIndex=Utilities.file_index;
+	var aFile = a_files[aFileIndex];
+	readFileOpen(aFile);
+
+}
+//
+
+function nextSelectFile(){
+	//  SaveScreen();
+		fbCanvasObj.save();
+
+		var n_files = Utilities.file_list;
+		Utilities.file_index = Utilities.file_index+1;
+		document.getElementById('id_filetext').selectedIndex = Utilities.file_index;
+
+		var nFileIndex=Utilities.file_index;
+		var nFile = n_files[nFileIndex];
+		readFileOpen(nFile);
 }
 
-function nextSelectFile() {
-    fbCanvasObj.save();
+function previousSelectFile(){
+	  //SaveScreen();
+		fbCanvasObj.save();
 
-    var n_files = Utilities.file_list;
-    Utilities.file_index += 1;
-    $('#id_filetext').prop('selectedIndex', Utilities.file_index);
+		var p_files = Utilities.file_list;
+		Utilities.file_index = Utilities.file_index-1;
+		document.getElementById('id_filetext').selectedIndex = Utilities.file_index;
 
-    var nFile = n_files[Utilities.file_index];
-    readFileOpen(nFile);
+		var pFileIndex=Utilities.file_index;
+		var pFile = p_files[pFileIndex];
+		readFileOpen(pFile);
 }
 
-function previousSelectFile() {
-    fbCanvasObj.save();
+//First attempt
+function readFileOpen(oFile){
+	showAllButtons();
 
-    var p_files = Utilities.file_list;
-    Utilities.file_index -= 1;
-    $('#id_filetext').prop('selectedIndex', Utilities.file_index);
+// reset undo and redo
+	fbCanvasObj.mUndoArray = [];
+	fbCanvasObj.mRedoArray = [];
 
-    var pFile = p_files[Utilities.file_index];
-    readFileOpen(pFile);
+	FBFileReader.readAsText(oFile);
+	FBFileReader.onload = function (oFile) {
+	   fbCanvasObj.handleFileEvent(oFile);
+	}
+	showSelectList();
 }
+//
 
-function readFileOpen(oFile) {
-    showAllButtons();
 
-    // Reset undo and redo
-    fbCanvasObj.mUndoArray = [];
-    fbCanvasObj.mRedoArray = [];
-
-    FBFileReader.readAsText(oFile);
-    FBFileReader.onload = function(event) {
-        fbCanvasObj.handleFileEvent(event);
-    }
-    showSelectList();
-}
-
+//First attempt
 function showSelectList() {
-    var f_files = Utilities.file_list;
-    var first = $('#id_filetext');
-    var b_title = $('#bar_titles');
-    var file_length = f_files.length;
-    var select_length = first.prop('selectedIndex') + 1;
-    var s_files = f_files[Utilities.file_index];
-    document.title = s_files.name;
-    b_title.text(": " + s_files.name);
+	f_files = Utilities.file_list;
+  var first = document.getElementById('id_filetext');
+  var b_title= document.getElementById('bar_titles');
+	var file_length = f_files.length;
+	var select_length = document.getElementById('id_filetext').selectedIndex;
+	var s_files = Utilities.file_list[Utilities.file_index];
+	select_length = select_length + 1;
+	document.title =  s_files.name;
+	b_title.innerHTML=": "+s_files.name;
 
-    if (file_length === 1) {
-        hideButton("id_filetext");
-        hideButton("action_previous");
-        hideButton("action_next");
-    }
-    else if (file_length === select_length) {
-        showButton("id_filetext");
-        showButton("action_previous");
-        hideButton("action_next");
-    }
-    else if (select_length === 1 || select_length === 0) {
-        showButton("id_filetext");
-        hideButton("action_previous");
-        showButton("action_next");
-    }
-    else {
-        showButton("id_filetext");
-        showButton("action_previous");
-        showButton("action_next");
-    }
+  if(file_length===1){
+		hideButton("id_filetext");
+		hideButton("action_previous");
+		hideButton("action_next");
+	}
+	else if (file_length===select_length){
+		showButton("id_filetext");
+		showButton("action_previous");
+		hideButton("action_next");
+	}
+	else if (select_length===1 || select_length===0){
+		showButton("id_filetext");
+		hideButton("action_previous");
+		showButton("action_next");
+	}
+	else {
+		showButton("id_filetext");
+	  showButton("action_previous");
+	  showButton("action_next");
+	}
 
-    // Clear existing options
-    first.empty();
-
-    $.each(f_files, function(i, f1) {
-        if (s_files.name !== f1.name) {
-            first.append($('<option>', { value: f1.name, text: f1.name }));
-        }
-        else {
-            first.append($('<option>', { value: f1.name, text: f1.name, selected: true }));
-        }
-    });
+	first.innerHTML='';
+	for (var i=0, f1; f1=f_files[i]; i++) {
+			if (s_files.name !== f1.name ) {
+					first.innerHTML=first.innerHTML+'<option value="' + f1.name + '">' + f1.name +'</option>';
+			}
+			else {
+				first.innerHTML=first.innerHTML+'<option value="' + f1.name + '"selected>' + f1.name +'</option>';
+			}
+	}
 }
+//
+
 
 function resetFormElement(e) {
-    e.wrap('<form>').closest('form').get(0).reset();
-    e.unwrap();
+  e.wrap('<form>').closest('form').get(0).reset();
+  e.unwrap();
 }
 
-// For Debugging
+
+// for debugging
+
 function updateMouseLoc(e, elem) {
-    var x = e.clientX - elem.position().left;
-    var y = e.clientY - elem.position().top;
-    var offsetX = elem.offset().left;
-    var offsetY = elem.offset().top;
-    // Uncomment for debugging
-    // $('#mouseLoc').text(x + ', ' + y + ' | ' + offsetX + ', ' + offsetY + ' | ' + window.pageXOffset + ', ' + window.pageYOffset );
+	x = e.clientX - elem.position().left ;
+	y = e.clientY - elem.position().top ;
+	offsetX = elem.offset().left;
+	offsetY	= elem.offset().top;
+	/*
+	$('#mouseLoc').text(x + ', ' + y + ' | ' + offsetX  + ', ' + offsetY + ' | ' + window.pageXOffset  + ', ' + window.pageYOffset );
+	*/
 }
 
 function updateMouseAction(actionName) {
-    // Uncomment for debugging
-    // $('#mouseAction').text(actionName);
+	/*
+	$('#mouseAction').text(actionName) ;
+	*/
 }
