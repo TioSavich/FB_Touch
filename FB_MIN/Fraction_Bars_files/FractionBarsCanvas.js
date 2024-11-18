@@ -24,17 +24,30 @@ FractionBarsCanvas.prototype.getNormalizedPosition = function(event) {
     }
 };
 
-FractionBarsCanvas.prototype.handleTouchStart = function(event) {
-    event.preventDefault();
-    this.mouseDownLoc = this.getNormalizedPosition(event);
-    this.currentAction = 'drawing';
-};
-
-FractionBarsCanvas.prototype.handleTouchMove = function(event) {
+FractionBarsCanvas.prototype.handleTouchEnd = function(event) {
     if (this.currentAction === 'drawing') {
         event.preventDefault();
-        const currentLoc = this.getNormalizedPosition(event);
-        this.updateCanvas(currentLoc);
+        this.mouseUpLoc = this.getNormalizedPosition(event);
+
+        // Finalize and save the bar
+        const newBar = {
+            x: Math.min(this.mouseDownLoc.x, this.mouseUpLoc.x),
+            y: Math.min(this.mouseDownLoc.y, this.mouseUpLoc.y),
+            w: Math.abs(this.mouseUpLoc.x - this.mouseDownLoc.x),
+            h: Math.abs(this.mouseUpLoc.y - this.mouseDownLoc.y),
+            color: this.currentFill,
+        };
+
+        // Add the bar to the array
+        this.bars.push(newBar);
+
+        // Reset state
+        this.mouseDownLoc = null;
+        this.mouseUpLoc = null;
+        this.currentAction = '';
+
+        // Redraw the canvas
+        this.refreshCanvas();
     }
 };
 
@@ -42,8 +55,37 @@ FractionBarsCanvas.prototype.handleTouchEnd = function(event) {
     if (this.currentAction === 'drawing') {
         event.preventDefault();
         this.mouseUpLoc = this.getNormalizedPosition(event);
-        this.finalizeBar();
+
+        // Finalize and save the bar
+        const newBar = {
+            x: Math.min(this.mouseDownLoc.x, this.mouseUpLoc.x),
+            y: Math.min(this.mouseDownLoc.y, this.mouseUpLoc.y),
+            w: Math.abs(this.mouseUpLoc.x - this.mouseDownLoc.x),
+            h: Math.abs(this.mouseUpLoc.y - this.mouseDownLoc.y),
+            color: this.currentFill,
+        };
+
+        // Add the bar to the array
+        this.bars.push(newBar);
+
+        // Reset state
+        this.mouseDownLoc = null;
+        this.mouseUpLoc = null;
         this.currentAction = '';
+
+        // Redraw the canvas
+        this.refreshCanvas();
+    }
+};
+
+FractionBarsCanvas.prototype.refreshCanvas = function() {
+    this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
+
+    // Redraw all bars
+    for (const bar of this.bars) {
+        this.context.fillStyle = bar.color;
+        this.context.fillRect(bar.x, bar.y, bar.w, bar.h);
+        this.context.strokeRect(bar.x, bar.y, bar.w, bar.h);
     }
 };
 
