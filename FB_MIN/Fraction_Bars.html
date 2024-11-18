@@ -1,8 +1,4 @@
 <!DOCTYPE html>
-<!-- saved from url=(0033)https://educn101.sitehost.iu.edu/ -->
-<html lang="en"><!-- test this will be a conflict -->
-
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -11,176 +7,136 @@
     <link rel="stylesheet" href="./Fraction_Bars_files/lang_eng.css" type="text/css">
     <link rel="stylesheet" href="./Fraction_Bars_files/deneme.css" type="text/css">
     <link rel="stylesheet" href="./Fraction_Bars_files/jquery-ui-1.10.3.custom.min.css" type="text/css">
-    <script src="./Fraction_Bars_files/jquery-1.9.1.min.js" type="text/javascript" language="javascript"></script>
-    <script src="./Fraction_Bars_files/jquery-ui-1.10.3.custom.min.js" type="text/javascript" language="javascript"></script>
-    <script src="./Fraction_Bars_files/cycle.js" type="text/javascript" language="javascript"></script>
-    <script src="./Fraction_Bars_files/FileSaver.min.js" type="text/javascript" language="javascript"></script>
-    <script src="./Fraction_Bars_files/Blob.js" type="text/javascript" language="javascript"></script>
-    <script src="./Fraction_Bars_files/utilities.js" type="application/javascript" language="javascript"></script>
-    <script src="./Fraction_Bars_files/Point.js" type="application/javascript" language="javascript"></script>
-    <script src="./Fraction_Bars_files/Bar.js" type="application/javascript" language="javascript"></script>
-    <script src="./Fraction_Bars_files/Mat.js" type="application/javascript" language="javascript"></script>
-    <script src="./Fraction_Bars_files/Split.js" type="application/javascript" language="javascript"></script>
-    <script src="./Fraction_Bars_files/SplitsWidget.js" type="application/javascript" language="javascript"></script>
-    <script src="./Fraction_Bars_files/Line.js" type="application/javascript" language="javascript"></script>
-    <script src="./Fraction_Bars_files/CanvasState.js" type="application/javascript" language="javascript"></script>
-    <script src="./Fraction_Bars_files/FractionBarsCanvas.js" type="application/javascript" language="javascript"></script>
-    <script src="./Fraction_Bars_files/fractionBars.js" type="application/javascript" language="javascript"></script>
+    <script src="./Fraction_Bars_files/jquery-1.9.1.min.js" type="text/javascript"></script>
+    <script src="./Fraction_Bars_files/jquery-ui-1.10.3.custom.min.js" type="text/javascript"></script>
+    <script src="./Fraction_Bars_files/cycle.js" type="text/javascript"></script>
+    <script src="./Fraction_Bars_files/FileSaver.min.js" type="text/javascript"></script>
+    <script src="./Fraction_Bars_files/Blob.js" type="text/javascript"></script>
+    <script src="./Fraction_Bars_files/utilities.js" type="text/javascript"></script>
+    <script src="./Fraction_Bars_files/Point.js" type="text/javascript"></script>
+    <script src="./Fraction_Bars_files/Bar.js" type="text/javascript"></script>
+    <script src="./Fraction_Bars_files/Mat.js" type="text/javascript"></script>
+    <script src="./Fraction_Bars_files/Split.js" type="text/javascript"></script>
+    <script src="./Fraction_Bars_files/SplitsWidget.js" type="text/javascript"></script>
+    <script src="./Fraction_Bars_files/Line.js" type="text/javascript"></script>
+    <script src="./Fraction_Bars_files/CanvasState.js" type="text/javascript"></script>
+    <script src="./Fraction_Bars_files/FractionBarsCanvas.js" type="text/javascript"></script>
+    <script src="./Fraction_Bars_files/fractionBars.js" type="text/javascript"></script>
     <script type="text/javascript">
-document.addEventListener('DOMContentLoaded', function () {
-    const canvas = document.getElementById('fbCanvas');
-    const context = canvas.getContext('2d', { willReadFrequently: true });
-    document.addEventListener('DOMContentLoaded', function () {
-    const canvas = document.getElementById('fbCanvas');
-    const context = canvas.getContext('2d', { willReadFrequently: true });
+        document.addEventListener('DOMContentLoaded', function () {
+            const canvas = document.getElementById('fbCanvas');
+            const context = canvas.getContext('2d', { willReadFrequently: true });
+            
+            let isDragging = false;
+            let startPoint = null;
+            let activeTool = null;
+            let selectedColor = '#ff8800'; // Default color
+            const drawnBars = []; // Array to store drawn bars
 
-    function getEventPosition(event) {
-        let x, y;
+            // Function to normalize coordinates for mouse and touch events
+            function getEventPosition(event) {
+                let x, y;
 
-        if (event.touches) {
-            const touch = event.touches[0];
-            x = touch.clientX - canvas.offsetLeft;
-            y = touch.clientY - canvas.offsetTop;
-        } else {
-            x = event.clientX - canvas.offsetLeft;
-            y = event.clientY - canvas.offsetTop;
-        }
+                if (event.touches) {
+                    const touch = event.touches[0];
+                    x = touch.clientX - canvas.offsetLeft;
+                    y = touch.clientY - canvas.offsetTop;
+                } else {
+                    x = event.clientX - canvas.offsetLeft;
+                    y = event.clientY - canvas.offsetTop;
+                }
 
-        return { x, y };
-    }
-let isDragging = false;
-    let startPoint = null;
-    let activeTool = null;
-    let selectedColor = '#ff8800'; // Default color
-    const drawnBars = []; // Array to store drawn bars
-
-    // Set active tool
-	const setActiveTool = (tool) => {
-    if (activeTool === tool) {
-        activeTool = null; // Deactivate tool if it's already active
-    } else {
-        activeTool = tool;
-    }
-};
-    // Bar button event listener
-    document.getElementById('tool_bar').addEventListener('click', () => {
-        setActiveTool('bar');
-        console.log('Bar tool selected');
-    });
-
-    // Normalize coordinates for mouse and touch events
-	document.getElementById('tool_bar').addEventListener('click', () => {
-    if (activeTool === 'bar') {
-        setActiveTool(null); // Deactivate tool
-        console.log('Bar tool deactivated');
-    } else {
-        setActiveTool('bar'); // Activate bar tool
-        console.log('Bar tool selected');
-    }
-});
-    // Redraw all bars
-    function redrawBars() {
-        context.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
-        for (const bar of drawnBars) {
-            context.beginPath();
-            context.rect(bar.start.x, bar.start.y, bar.width, bar.height);
-            context.fillStyle = bar.color;
-            context.fill();
-            context.stroke();
-        }
-        console.log('Canvas redrawn with bars:', drawnBars);
-    }
-	function getEventPosition(event) {
-    let x, y;
-
-    if (event.touches) {
-        // Handle touch events
-        const touch = event.touches[0]; // Get the first touch point
-        x = touch.clientX - canvas.offsetLeft;
-        y = touch.clientY - canvas.offsetTop;
-    } else {
-        // Handle mouse events
-        x = event.clientX - canvas.offsetLeft;
-        y = event.clientY - canvas.offsetTop;
-    }
-
-    return { x, y };
-    // Start bar creation
-	function startInteraction(event) {
-    if (activeTool === 'bar') {
-        event.preventDefault(); // Prevent scrolling or other default behavior
-        startPoint = getEventPosition(event);
-        isDragging = true;
-        console.log('Bar drawing started at:', startPoint);
-    }
-}
-    // Update bar while dragging
-	let redrawTimeout;
-
-function moveInteraction(event) {
-    if (isDragging && activeTool === 'bar') {
-        clearTimeout(redrawTimeout);
-
-        redrawTimeout = setTimeout(() => {
-            const currentPoint = getEventPosition(event);
-
-            // Calculate bar dimensions
-            const width = currentPoint.x - startPoint.x;
-            const height = currentPoint.y - startPoint.y;
-
-            if (width !== 0 && height !== 0) {
-                redrawBars(); // Clear and redraw existing bars
-                context.beginPath();
-                context.rect(startPoint.x, startPoint.y, width, height);
-                context.fillStyle = selectedColor;
-                context.fill();
-                context.stroke();
+                return { x, y };
             }
-        }, 16); // Roughly 60fps
-    }
-}
 
-    // Finalize bar creation
-	function endInteraction(event) {
-    if (isDragging && activeTool === 'bar') {
-        event.preventDefault();
-        const endPoint = getEventPosition(event);
-
-        const width = endPoint.x - startPoint.x;
-        const height = endPoint.y - startPoint.y;
-
-        // Only save the bar if it has valid dimensions
-        if (width > 0 && height > 0) {
-            const newBar = {
-                start: { x: startPoint.x, y: startPoint.y },
-                width,
-                height,
-                color: selectedColor,
+            // Set active tool
+            const setActiveTool = (tool) => {
+                activeTool = (activeTool === tool) ? null : tool;
+                console.log(`Tool set to: ${activeTool}`);
             };
 
-            drawnBars.push(newBar);
-            console.log('Bar finalized:', newBar);
-        }
+            // Bar button event listener
+            document.getElementById('tool_bar').addEventListener('click', () => {
+                setActiveTool('bar');
+            });
 
-        isDragging = false; // Reset dragging state
-        activeTool = null; // Reset active tool state
-        startPoint = null; // Clear the start point
+            // Redraw all bars
+            function redrawBars() {
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                for (const bar of drawnBars) {
+                    context.beginPath();
+                    context.rect(bar.start.x, bar.start.y, bar.width, bar.height);
+                    context.fillStyle = bar.color;
+                    context.fill();
+                    context.stroke();
+                }
+                console.log('Canvas redrawn with bars:', drawnBars);
+            }
 
-        redrawBars();
-    }
-}
+            // Start bar creation
+            function startInteraction(event) {
+                if (activeTool === 'bar') {
+                    event.preventDefault();
+                    startPoint = getEventPosition(event);
+                    isDragging = true;
+                    console.log('Bar drawing started at:', startPoint);
+                }
+            }
 
-    // Add event listeners for both touch and mouse events
-	canvas.addEventListener('mousedown', startInteraction);
-canvas.addEventListener('mousemove', moveInteraction);
-canvas.addEventListener('mouseup', endInteraction);
+            // Update bar while dragging
+            function moveInteraction(event) {
+                if (isDragging && activeTool === 'bar') {
+                    const currentPoint = getEventPosition(event);
 
+                    const width = currentPoint.x - startPoint.x;
+                    const height = currentPoint.y - startPoint.y;
 
-canvas.addEventListener('touchstart', startInteraction, { passive: false });
-canvas.addEventListener('touchmove', moveInteraction, { passive: false });
-canvas.addEventListener('touchend', endInteraction, { passive: false });
-});
-console.log('Tool state:', activeTool, 'Dragging state:', isDragging);
+                    if (width !== 0 && height !== 0) {
+                        redrawBars();
+                        context.beginPath();
+                        context.rect(startPoint.x, startPoint.y, width, height);
+                        context.fillStyle = selectedColor;
+                        context.fill();
+                        context.stroke();
+                    }
+                }
+            }
+
+            // Finalize bar creation
+            function endInteraction(event) {
+                if (isDragging && activeTool === 'bar') {
+                    event.preventDefault();
+                    const endPoint = getEventPosition(event);
+
+                    const width = endPoint.x - startPoint.x;
+                    const height = endPoint.y - startPoint.y;
+
+                    if (width > 0 && height > 0) {
+                        drawnBars.push({
+                            start: { x: startPoint.x, y: startPoint.y },
+                            width,
+                            height,
+                            color: selectedColor,
+                        });
+                        console.log('Bar finalized');
+                    }
+
+                    isDragging = false;
+                    activeTool = null;
+                    startPoint = null;
+
+                    redrawBars();
+                }
+            }
+
+            // Event listeners for mouse and touch events
+            canvas.addEventListener('mousedown', startInteraction);
+            canvas.addEventListener('mousemove', moveInteraction);
+            canvas.addEventListener('mouseup', endInteraction);
+            canvas.addEventListener('touchstart', startInteraction, { passive: false });
+            canvas.addEventListener('touchmove', moveInteraction, { passive: false });
+            canvas.addEventListener('touchend', endInteraction, { passive: false });
+        });
     </script>
 </head>
 <body data-new-gr-c-s-check-loaded="14.1208.0" data-gr-ext-installed="">
