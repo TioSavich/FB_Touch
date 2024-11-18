@@ -34,7 +34,7 @@
     let startPoint = null;
     let activeTool = null;
     let selectedColor = '#ff8800'; // Default color
-    const drawnBars = []; // Array to store bars
+    const drawnBars = []; // Array to store drawn bars
 
     // Function to set the active tool
     const setActiveTool = (tool) => {
@@ -53,13 +53,13 @@
     function getEventPosition(event) {
         if (event.touches && event.touches.length > 0) {
             return {
-                x: event.touches[0].clientX - canvas.offsetLeft,
-                y: event.touches[0].clientY - canvas.offsetTop,
+                x: event.touches[0].clientX - canvas.getBoundingClientRect().left,
+                y: event.touches[0].clientY - canvas.getBoundingClientRect().top,
             };
         } else {
             return {
-                x: event.clientX - canvas.offsetLeft,
-                y: event.clientY - canvas.offsetTop,
+                x: event.clientX - canvas.getBoundingClientRect().left,
+                y: event.clientY - canvas.getBoundingClientRect().top,
             };
         }
     }
@@ -90,7 +90,7 @@
         if (isDragging && activeTool === 'bar') {
             event.preventDefault();
             const currentPoint = getEventPosition(event);
-            redrawBars(); // Clear and redraw existing bars
+            redrawBars(); // Redraw existing bars
 
             // Calculate width and height based on drag
             const width = currentPoint.x - startPoint.x;
@@ -139,9 +139,9 @@
     canvas.addEventListener('mousemove', moveInteraction);
     canvas.addEventListener('mouseup', endInteraction);
 
-    canvas.addEventListener('touchstart', startInteraction);
-    canvas.addEventListener('touchmove', moveInteraction);
-    canvas.addEventListener('touchend', endInteraction);
+    canvas.addEventListener('touchstart', startInteraction, { passive: false });
+    canvas.addEventListener('touchmove', moveInteraction, { passive: false });
+    canvas.addEventListener('touchend', endInteraction, { passive: false });
 });
     </script>
 </head>
