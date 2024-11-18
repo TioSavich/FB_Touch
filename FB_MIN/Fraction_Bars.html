@@ -27,23 +27,26 @@
     <script src="./Fraction_Bars_files/FractionBarsCanvas.js" type="application/javascript" language="javascript"></script>
     <script src="./Fraction_Bars_files/fractionBars.js" type="application/javascript" language="javascript"></script>
     <script type="text/javascript">
-     document.addEventListener('DOMContentLoaded', function () {
+   document.addEventListener('DOMContentLoaded', function () {
     const canvas = document.getElementById('fbCanvas');
     const context = canvas.getContext('2d');
     let isDragging = false;
     let startPoint = null;
     let activeTool = null;
+    let selectedColor = '#ff8800'; // Default color
+    const drawnBars = []; // Array to store bars
 
     // Function to set the active tool
     const setActiveTool = (tool) => {
         activeTool = tool;
     };
 
-    // Event handlers for selecting the bar tool
-    const barToolButton = document.getElementById('tool_bar');
-    barToolButton.addEventListener('click', () => {
-        setActiveTool('bar');
-        console.log('Bar tool selected');
+    // Function to select color
+    document.querySelectorAll('.colorBlock').forEach(colorBlock => {
+        colorBlock.addEventListener('click', () => {
+            selectedColor = window.getComputedStyle(colorBlock).backgroundColor;
+            console.log('Selected color:', selectedColor);
+        });
     });
 
     // Normalize event coordinates for touch and mouse
@@ -61,6 +64,18 @@
         }
     }
 
+    // Redraw all bars
+    function redrawBars() {
+        context.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+        for (const bar of drawnBars) {
+            context.beginPath();
+            context.rect(bar.start.x, bar.start.y, bar.width, bar.height);
+            context.fillStyle = bar.color;
+            context.fill();
+            context.stroke();
+        }
+    }
+
     // Event handlers for the canvas
     function startInteraction(event) {
         if (activeTool === 'bar') {
@@ -75,24 +90,20 @@
         if (isDragging && activeTool === 'bar') {
             event.preventDefault();
             const currentPoint = getEventPosition(event);
+            redrawBars(); // Clear and redraw existing bars
 
-            // Clear canvas for redrawing (if necessary)
-            context.clearRect(0, 0, canvas.width, canvas.height);
+            // Calculate width and height based on drag
+            const width = currentPoint.x - startPoint.x;
+            const height = currentPoint.y - startPoint.y;
 
-            // Redraw existing elements here (if applicable)
-
-            // Draw the bar
+            // Draw the bar dynamically as it is dragged
             context.beginPath();
-            context.rect(
-                startPoint.x,
-                startPoint.y,
-                currentPoint.x - startPoint.x,
-                20 // Fixed bar height for simplicity
-            );
-            context.fillStyle = '#ff8800';
+            context.rect(startPoint.x, startPoint.y, width, height);
+            context.fillStyle = selectedColor;
             context.fill();
             context.stroke();
-            console.log('Drawing bar to:', currentPoint);
+
+            console.log('Drawing bar to:', currentPoint, 'Width:', width, 'Height:', height);
         }
     }
 
@@ -100,10 +111,21 @@
         if (isDragging && activeTool === 'bar') {
             event.preventDefault();
             const endPoint = getEventPosition(event);
-            console.log('Bar drawing ended at:', endPoint);
 
-            // Finalize bar (e.g., store it in an array of drawn bars for future interactions)
-            // Example: drawnBars.push({ start: startPoint, end: endPoint });
+            // Calculate final width and height
+            const width = endPoint.x - startPoint.x;
+            const height = endPoint.y - startPoint.y;
+
+            // Store the bar in the drawnBars array
+            drawnBars.push({
+                start: { x: startPoint.x, y: startPoint.y },
+                width: width,
+                height: height,
+                color: selectedColor,
+            });
+
+            redrawBars(); // Ensure all bars are redrawn
+            console.log('Bar drawing ended at:', endPoint, 'Final dimensions:', { width, height });
 
             // Reset state
             isDragging = false;
