@@ -29,7 +29,7 @@
     <script type="text/javascript">
 document.addEventListener('DOMContentLoaded', function () {
     const canvas = document.getElementById('fbCanvas');
-    const context = canvas.getContext('2d', { willReadFrequently: true }););
+    const context = canvas.getContext('2d');
     let isDragging = false;
     let startPoint = null;
     let activeTool = null;
@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Start bar creation
     function startInteraction(event) {
         if (activeTool === 'bar') {
-            event.preventDefault();
+            event.preventDefault(); // Prevent default touch behavior
             startPoint = getEventPosition(event);
             isDragging = true;
             console.log('Bar drawing started at:', startPoint);
@@ -87,13 +87,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Update bar while dragging
-	let redrawTimeout;
-
-function moveInteraction(event) {
-    if (isDragging && activeTool === 'bar') {
-        clearTimeout(redrawTimeout);
-
-        redrawTimeout = setTimeout(() => {
+    function moveInteraction(event) {
+        if (isDragging && activeTool === 'bar') {
+            event.preventDefault(); // Prevent default touch behavior
             const currentPoint = getEventPosition(event);
 
             // Calculate bar dimensions
@@ -102,44 +98,47 @@ function moveInteraction(event) {
 
             if (width !== 0 && height !== 0) {
                 redrawBars(); // Clear and redraw existing bars
+
+                // Draw the bar dynamically as it is dragged
                 context.beginPath();
                 context.rect(startPoint.x, startPoint.y, width, height);
                 context.fillStyle = selectedColor;
                 context.fill();
                 context.stroke();
+
+                console.log('Drawing bar to:', currentPoint, 'Width:', width, 'Height:', height);
             }
-        }, 16); // Roughly 60fps
+        }
     }
-}
 
     // Finalize bar creation
     function endInteraction(event) {
-    if (isDragging && activeTool === 'bar') {
-        event.preventDefault();
-        const endPoint = getEventPosition(event);
+        if (isDragging && activeTool === 'bar') {
+            event.preventDefault(); // Prevent default touch behavior
+            const endPoint = getEventPosition(event);
 
-        const width = endPoint.x - startPoint.x;
-        const height = endPoint.y - startPoint.y;
+            // Calculate final dimensions
+            const width = endPoint.x - startPoint.x;
+            const height = endPoint.y - startPoint.y;
 
-        // Only save the bar if it has valid dimensions
-        if (width > 0 && height > 0) {
-            const newBar = {
-                start: { x: startPoint.x, y: startPoint.y },
-                width,
-                height,
-                color: selectedColor,
-            };
+            if (width > 0 && height > 0) {
+                const newBar = {
+                    start: { x: startPoint.x, y: startPoint.y },
+                    width,
+                    height,
+                    color: selectedColor,
+                };
 
-            drawnBars.push(newBar);
-            console.log('Bar finalized:', newBar);
+                drawnBars.push(newBar);
+                console.log('Bar finalized:', newBar);
+            }
+
+            isDragging = false;
+            startPoint = null;
+
+            redrawBars();
         }
-
-        isDragging = false;
-        startPoint = null;
-
-        redrawBars();
     }
-}
 
     // Add event listeners for both touch and mouse events
     canvas.addEventListener('mousedown', startInteraction);
