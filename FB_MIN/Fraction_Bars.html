@@ -27,7 +27,7 @@
     <script src="./Fraction_Bars_files/FractionBarsCanvas.js" type="application/javascript" language="javascript"></script>
     <script src="./Fraction_Bars_files/fractionBars.js" type="application/javascript" language="javascript"></script>
     <script type="text/javascript">
-   document.addEventListener('DOMContentLoaded', function () {
+  document.addEventListener('DOMContentLoaded', function () {
     const canvas = document.getElementById('fbCanvas');
     const context = canvas.getContext('2d');
     let isDragging = false;
@@ -36,20 +36,18 @@
     let selectedColor = '#ff8800'; // Default color
     const drawnBars = []; // Array to store drawn bars
 
-    // Function to set the active tool
+    // Set active tool
     const setActiveTool = (tool) => {
         activeTool = tool;
     };
 
-    // Function to select color
-    document.querySelectorAll('.colorBlock').forEach(colorBlock => {
-        colorBlock.addEventListener('click', () => {
-            selectedColor = window.getComputedStyle(colorBlock).backgroundColor;
-            console.log('Selected color:', selectedColor);
-        });
+    // Bar button event listener
+    document.getElementById('tool_bar').addEventListener('click', () => {
+        setActiveTool('bar');
+        console.log('Bar tool selected');
     });
 
-    // Normalize event coordinates for touch and mouse
+    // Normalize coordinates
     function getEventPosition(event) {
         if (event.touches && event.touches.length > 0) {
             return {
@@ -64,7 +62,7 @@
         }
     }
 
-    // Redraw all bars
+    // Redraw existing bars
     function redrawBars() {
         context.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
         for (const bar of drawnBars) {
@@ -76,7 +74,7 @@
         }
     }
 
-    // Event handlers for the canvas
+    // Start bar creation
     function startInteraction(event) {
         if (activeTool === 'bar') {
             event.preventDefault();
@@ -86,17 +84,18 @@
         }
     }
 
+    // Update bar while dragging
     function moveInteraction(event) {
         if (isDragging && activeTool === 'bar') {
             event.preventDefault();
             const currentPoint = getEventPosition(event);
-            redrawBars(); // Redraw existing bars
+            redrawBars(); // Clear and redraw existing bars
 
-            // Calculate width and height based on drag
+            // Calculate bar dimensions
             const width = currentPoint.x - startPoint.x;
             const height = currentPoint.y - startPoint.y;
 
-            // Draw the bar dynamically as it is dragged
+            // Draw the bar being created
             context.beginPath();
             context.rect(startPoint.x, startPoint.y, width, height);
             context.fillStyle = selectedColor;
@@ -107,16 +106,17 @@
         }
     }
 
+    // Finalize bar creation
     function endInteraction(event) {
         if (isDragging && activeTool === 'bar') {
             event.preventDefault();
             const endPoint = getEventPosition(event);
 
-            // Calculate final width and height
+            // Calculate final dimensions
             const width = endPoint.x - startPoint.x;
             const height = endPoint.y - startPoint.y;
 
-            // Store the bar in the drawnBars array
+            // Save the bar to the array
             drawnBars.push({
                 start: { x: startPoint.x, y: startPoint.y },
                 width: width,
@@ -125,16 +125,15 @@
             });
 
             redrawBars(); // Ensure all bars are redrawn
-            console.log('Bar drawing ended at:', endPoint, 'Final dimensions:', { width, height });
+            console.log('Bar finalized:', { start: startPoint, width, height });
 
             // Reset state
             isDragging = false;
             startPoint = null;
-            activeTool = null; // Reset the tool so bars are not created on subsequent clicks
         }
     }
 
-    // Add event listeners for both touch and mouse events
+    // Add event listeners for both touch and mouse
     canvas.addEventListener('mousedown', startInteraction);
     canvas.addEventListener('mousemove', moveInteraction);
     canvas.addEventListener('mouseup', endInteraction);
