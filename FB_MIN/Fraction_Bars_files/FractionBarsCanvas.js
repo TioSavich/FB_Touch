@@ -9,7 +9,65 @@
 // by John Olive and Leslie Steffe.
 // We thank them for allowing us to update that product.
 
+FractionBarsCanvas.prototype.getNormalizedPosition = function(event) {
+    const rect = this.context.canvas.getBoundingClientRect();
+    if (event.touches && event.touches.length > 0) {
+        return {
+            x: event.touches[0].clientX - rect.left,
+            y: event.touches[0].clientY - rect.top
+        };
+    } else {
+        return {
+            x: event.clientX - rect.left,
+            y: event.clientY - rect.top
+        };
+    }
+};
 
+FractionBarsCanvas.prototype.handleTouchStart = function(event) {
+    event.preventDefault();
+    this.mouseDownLoc = this.getNormalizedPosition(event);
+    this.currentAction = 'drawing';
+};
+
+FractionBarsCanvas.prototype.handleTouchMove = function(event) {
+    if (this.currentAction === 'drawing') {
+        event.preventDefault();
+        const currentLoc = this.getNormalizedPosition(event);
+        this.updateCanvas(currentLoc);
+    }
+};
+
+FractionBarsCanvas.prototype.handleTouchEnd = function(event) {
+    if (this.currentAction === 'drawing') {
+        event.preventDefault();
+        this.mouseUpLoc = this.getNormalizedPosition(event);
+        this.finalizeBar();
+        this.currentAction = '';
+    }
+};
+
+function FractionBarsCanvas(canvasContext) {
+    this.context = canvasContext;
+    this.currentAction = '';
+    this.canvasState = null;
+    this.currentFill = '#FFFF66';
+    this.mouseDownLoc = null;
+    this.mouseUpLoc = null;
+    this.mouseLastLoc = null;
+    this.bars = [];
+
+    // Event listeners for mouse
+    const canvas = this.context.canvas;
+    canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));
+    canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));
+    canvas.addEventListener('mouseup', this.handleMouseUp.bind(this));
+
+    // Event listeners for touch
+    canvas.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: false });
+    canvas.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
+    canvas.addEventListener('touchend', this.handleTouchEnd.bind(this), { passive: false });
+}
 
 function FractionBarsCanvas(canvasContext) {
 	this.context = canvasContext ;
@@ -1040,16 +1098,3 @@ FractionBarsCanvas.prototype.print_canvas = function (){
 	win.self.print();
   win.location.reload();
 }
-FractionBarsCanvas.prototype.splitBarAtPoint = function(split_point, vert_split) {
-    // ... (your existing code)
-
-    // Modification: Check if the split_point is coming from a Hammer.js event
-    if (split_point.hasOwnProperty('center')) { 
-        var newPoint = new Point();
-        newPoint.x = split_point.center.x;
-        newPoint.y = split_point.center.y;
-        split_point = newPoint;
-    }
-
-    // ... (rest of your existing code)
-};
