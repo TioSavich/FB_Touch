@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<!-- saved from url=(0033)https://educn101.sitehost.iu.edu/ -->
+<html lang="en"><!-- test this will be a conflict --><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	
+	<title>HTML 5: Fraction Bars</title>
+	<link rel="stylesheet" href="./Fraction_Bars_files/fractionBars.css" type="text/css">
+	<link rel="stylesheet" href="./Fraction_Bars_files/lang_eng.css" type="text/css">
+	<link rel="stylesheet" href="./Fraction_Bars_files/deneme.css" type="text/css">
+	<link rel="stylesheet" href="./Fraction_Bars_files/jquery-ui-1.10.3.custom.min.css" type="text/css">
+	<script src="./Fraction_Bars_files/jquery-1.9.1.min.js" type="text/javascript" language="javascript"></script>
+	<script src="./Fraction_Bars_files/jquery-ui-1.10.3.custom.min.js" type="text/javascript" language="javascript"></script>
+	<script src="./Fraction_Bars_files/cycle.js" type="text/javascript" language="javascript"></script>
+	<script src="./Fraction_Bars_files/FileSaver.min.js" type="text/javascript" language="javascript"></script>
+	<script src="./Fraction_Bars_files/Blob.js" type="text/javascript" language="javascript"></script>
+	<script src="./Fraction_Bars_files/utilities.js" type="application/javascript" language="javascript"></script>
+	<script src="./Fraction_Bars_files/Point.js" type="application/javascript" language="javascript"></script>
+	<script src="./Fraction_Bars_files/Bar.js" type="application/javascript" language="javascript"></script>
+	<script src="./Fraction_Bars_files/Mat.js" type="application/javascript" language="javascript"></script>
+	<script src="./Fraction_Bars_files/Split.js" type="application/javascript" language="javascript"></script>
+	<script src="./Fraction_Bars_files/SplitsWidget.js" type="application/javascript" language="javascript"></script>
+	<script src="./Fraction_Bars_files/Line.js" type="application/javascript" language="javascript"></script>
+	<script src="./Fraction_Bars_files/CanvasState.js" type="application/javascript" language="javascript"></script>
+	<script src="./Fraction_Bars_files/FractionBarsCanvas.js" type="application/javascript" language="javascript"></script>
+	<script src="./Fraction_Bars_files/fractionBars.js" type="application/javascript" language="javascript"></script>
+
+
+</head>
+<body data-new-gr-c-s-check-loaded="14.1208.0" data-gr-ext-installed="">
+<a class="skip-link" href="https://educn101.sitehost.iu.edu/#main">Skip to main content</a>
+	<h1 class="bar_titles" id="bar_titles">Fraction Bars</h1>
+<div id="main">
+	<div id="tools">
+		<div class="toolGroup">
+			<a class="c_bar" id="tool_bar">&nbsp;</a>
+			<a class="c_mat" id="tool_mat">&nbsp;</a>
+ 			<!-- <a id="tool_cover">Cover</a> -->
+		</div>
+		<div class="toolGroup">
+			<a class="c_copy" id="action_copy">&nbsp;</a>
+			<a class="c_repeat" id="tool_repeat">&nbsp;</a>
+			<a class="c_iterate" id="window_iterate">&nbsp;</a>
+			<a class="c_join" id="action_join">&nbsp;</a>
+			<a class="c_delete" id="action_delete">&nbsp;</a>
+		</div>
+		<div class="toolGroup">
+			<a class="c_parts" id="window_split">&nbsp;</a>
+			<a class="c_pieces" id="tool_manualSplit">&nbsp;</a>
+			<a class="c_b_apart" id="action_breakApart">&nbsp;</a>
+			<a class="c_pullout" id="action_pullOutSplit">&nbsp;</a>
+			<a class="c_c_parts" id="action_clearSplits">&nbsp;</a>
+		</div>
+		<div class="toolGroup">
+			<a class="c_set_unit" id="action_setUnitBar">&nbsp;</a>
+			<a class="c_measure" id="action_measure">&nbsp;</a>
+			<a class="c_make" id="action_make">Make</a>
+			<a class="c_label" id="window_label">&nbsp;</a>
+		</div>
+		<div class="toolGroup">
+			<a class="c_undo" id="action_undo"></a>
+			<a class="c_redo" id="action_redo">&nbsp;</a>
+			<a class="c_save" id="action_save">&nbsp;</a>
+			<a class="c_open" id="action_open">&nbsp;</a>
+			<a class="c_new" id="action_clearAll">&nbsp;</a>
+			<a class="c_print" id="action_print">&nbsp;</a>
+			<a class="c_properties" id="window_properties">&nbsp;</a>
+		</div>
+		<div class="toolGroup" style="text-align:center">
+			<a class="colorBlock color10 colorSelected" id="setColor1">&nbsp;</a>
+			<a class="colorBlock color3" id="setColor2">&nbsp;</a>
+			<a class="colorBlock color7" id="setColor3">&nbsp;</a>
+			<a class="colorBlock color5" id="setColor4">&nbsp;</a>
+			<a class="colorBlock color12" id="setColor5">&nbsp;</a>
+			<a class="colorBlock color9" id="setColor6">&nbsp;</a>
+			<a class="colorBlock color13" id="setColor7">&nbsp;</a>
+			<a class="colorBlock color14" id="setColor8">&nbsp;</a>
+		</div>
+  	<div class="toolGroup" style="text-align:center">&nbsp;
+		<select class="c_filetext" id="id_filetext" multiple="multiple" style="display: none;"></select>
+			<a class="c_previous" id="action_previous" style="display: none;">&nbsp;</a>
+			<a class="c_next" id="action_next" style="display: none;">&nbsp;</a>
+	  </div>
+		<div class="toolGroup" style="text-align:center">
+			<a class="hideShow c_hide" id="tool_hide">&nbsp;</a>
+			<a class="hideShow c_show" id="action_show">&nbsp;</a>
+		</div>
+	</div>
+
+	<div hidden="" id="flags">
+		<a id="marked-iterate" data-flag="true">&nbsp;</a>
+	</div>
+
+	<canvas id="fbCanvas" width="700" height="600" data-savepage-canvasdatauri="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAArwAAAJYCAYAAACAbzXXAAAAAXNSR0IArs4c6QAAIABJREFUeF7t1kERAAAIAkHpX9oeN2sDFh/sHAECBAgQIECAAIGwwMLZRCNAgAABAgQIECBwBq8nIECAAAECBAgQSAsYvOl6hSNAgAABAgQIEDB4/QABAgQIECBAgEBawOBN1yscAQIECBAgQICAwesHCBAgQIAAAQIE0gIGb7pe4QgQIECAAAECBAxeP0CAAAECBAgQIJAWMHjT9QpHgAABAgQIECBg8PoBAgQIECBAgACBtIDBm65XOAIECBAgQIAAAYPXDxAgQIAAAQIECKQFDN50vcIRIECAAAECBAgYvH6AAAECBAgQIEAgLWDwpusVjgABAgQIECBAwOD1AwQIECBAgAABAmkBgzddr3AECBAgQIAAAQIGrx8gQIAAAQIECBBICxi86XqFI0CAAAECBAgQMHj9AAECBAgQIECAQFrA4E3XKxwBAgQIECBAgIDB6wcIECBAgAABAgTSAgZvul7hCBAgQIAAAQIEDF4/QIAAAQIECBAgkBYweNP1CkeAAAECBAgQIGDw+gECBAgQIECAAIG0gMGbrlc4AgQIECBAgAABg9cPECBAgAABAgQIpAUM3nS9whEgQIAAAQIECBi8foAAAQIECBAgQCAtYPCm6xWOAAECBAgQIEDA4PUDBAgQIECAAAECaQGDN12vcAQIECBAgAABAgavHyBAgAABAgQIEEgLGLzpeoUjQIAAAQIECBAweP0AAQIECBAgQIBAWsDgTdcrHAECBAgQIECAgMHrBwgQIECAAAECBNICBm+6XuEIECBAgAABAgQMXj9AgAABAgQIECCQFjB40/UKR4AAAQIECBAgYPD6AQIECBAgQIAAgbSAwZuuVzgCBAgQIECAAAGD1w8QIECAAAECBAikBQzedL3CESBAgAABAgQIGLx+gAABAgQIECBAIC1g8KbrFY4AAQIECBAgQMDg9QMECBAgQIAAAQJpAYM3Xa9wBAgQIECAAAECBq8fIECAAAECBAgQSAsYvOl6hSNAgAABAgQIEDB4/QABAgQIECBAgEBawOBN1yscAQIECBAgQICAwesHCBAgQIAAAQIE0gIGb7pe4QgQIECAAAECBAxeP0CAAAECBAgQIJAWMHjT9QpHgAABAgQIECBg8PoBAgQIECBAgACBtIDBm65XOAIECBAgQIAAAYPXDxAgQIAAAQIECKQFDN50vcIRIECAAAECBAgYvH6AAAECBAgQIEAgLWDwpusVjgABAgQIECBAwOD1AwQIECBAgAABAmkBgzddr3AECBAgQIAAAQIGrx8gQIAAAQIECBBICxi86XqFI0CAAAECBAgQMHj9AAECBAgQIECAQFrA4E3XKxwBAgQIECBAgIDB6wcIECBAgAABAgTSAgZvul7hCBAgQIAAAQIEDF4/QIAAAQIECBAgkBYweNP1CkeAAAECBAgQIGDw+gECBAgQIECAAIG0gMGbrlc4AgQIECBAgAABg9cPECBAgAABAgQIpAUM3nS9whEgQIAAAQIECBi8foAAAQIECBAgQCAtYPCm6xWOAAECBAgQIEDA4PUDBAgQIECAAAECaQGDN12vcAQIECBAgAABAgavHyBAgAABAgQIEEgLGLzpeoUjQIAAAQIECBAweP0AAQIECBAgQIBAWsDgTdcrHAECBAgQIECAgMHrBwgQIECAAAECBNICBm+6XuEIECBAgAABAgQMXj9AgAABAgQIECCQFjB40/UKR4AAAQIECBAgYPD6AQIECBAgQIAAgbSAwZuuVzgCBAgQIECAAAGD1w8QIECAAAECBAikBQzedL3CESBAgAABAgQIGLx+gAABAgQIECBAIC1g8KbrFY4AAQIECBAgQMDg9QMECBAgQIAAAQJpAYM3Xa9wBAgQIECAAAECBq8fIECAAAECBAgQSAsYvOl6hSNAgAABAgQIEDB4/QABAgQIECBAgEBawOBN1yscAQIECBAgQICAwesHCBAgQIAAAQIE0gIGb7pe4QgQIECAAAECBAxeP0CAAAECBAgQIJAWMHjT9QpHgAABAgQIECBg8PoBAgQIECBAgACBtIDBm65XOAIECBAgQIAAAYPXDxAgQIAAAQIECKQFDN50vcIRIECAAAECBAgYvH6AAAECBAgQIEAgLWDwpusVjgABAgQIECBAwOD1AwQIECBAgAABAmkBgzddr3AECBAgQIAAAQIGrx8gQIAAAQIECBBICxi86XqFI0CAAAECBAgQMHj9AAECBAgQIECAQFrA4E3XKxwBAgQIECBAgIDB6wcIECBAgAABAgTSAgZvul7hCBAgQIAAAQIEDF4/QIAAAQIECBAgkBYweNP1CkeAAAECBAgQIGDw+gECBAgQIECAAIG0gMGbrlc4AgQIECBAgAABg9cPECBAgAABAgQIpAUM3nS9whEgQIAAAQIECBi8foAAAQIECBAgQCAtYPCm6xWOAAECBAgQIEDA4PUDBAgQIECAAAECaQGDN12vcAQIECBAgAABAgavHyBAgAABAgQIEEgLGLzpeoUjQIAAAQIECBAweP0AAQIECBAgQIBAWsDgTdcrHAECBAgQIECAgMHrBwgQIECAAAECBNICBm+6XuEIECBAgAABAgQMXj9AgAABAgQIECCQFjB40/UKR4AAAQIECBAgYPD6AQIECBAgQIAAgbSAwZuuVzgCBAgQIECAAAGD1w8QIECAAAECBAikBQzedL3CESBAgAABAgQIGLx+gAABAgQIECBAIC1g8KbrFY4AAQIECBAgQMDg9QMECBAgQIAAAQJpAYM3Xa9wBAgQIECAAAECBq8fIECAAAECBAgQSAsYvOl6hSNAgAABAgQIEDB4/QABAgQIECBAgEBawOBN1yscAQIECBAgQICAwesHCBAgQIAAAQIE0gIGb7pe4QgQIECAAAECBAxeP0CAAAECBAgQIJAWMHjT9QpHgAABAgQIECBg8PoBAgQIECBAgACBtIDBm65XOAIECBAgQIAAAYPXDxAgQIAAAQIECKQFDN50vcIRIECAAAECBAgYvH6AAAECBAgQIEAgLWDwpusVjgABAgQIECBAwOD1AwQIECBAgAABAmkBgzddr3AECBAgQIAAAQIGrx8gQIAAAQIECBBICxi86XqFI0CAAAECBAgQMHj9AAECBAgQIECAQFrA4E3XKxwBAgQIECBAgIDB6wcIECBAgAABAgTSAgZvul7hCBAgQIAAAQIEDF4/QIAAAQIECBAgkBYweNP1CkeAAAECBAgQIGDw+gECBAgQIECAAIG0gMGbrlc4AgQIECBAgAABg9cPECBAgAABAgQIpAUM3nS9whEgQIAAAQIECBi8foAAAQIECBAgQCAtYPCm6xWOAAECBAgQIEDA4PUDBAgQIECAAAECaQGDN12vcAQIECBAgAABAgavHyBAgAABAgQIEEgLGLzpeoUjQIAAAQIECBAweP0AAQIECBAgQIBAWsDgTdcrHAECBAgQIECAgMHrBwgQIECAAAECBNICBm+6XuEIECBAgAABAgQMXj9AgAABAgQIECCQFjB40/UKR4AAAQIECBAgYPD6AQIECBAgQIAAgbSAwZuuVzgCBAgQIECAAAGD1w8QIECAAAECBAikBQzedL3CESBAgAABAgQIGLx+gAABAgQIECBAIC1g8KbrFY4AAQIECBAgQMDg9QMECBAgQIAAAQJpAYM3Xa9wBAgQIECAAAECBq8fIECAAAECBAgQSAsYvOl6hSNAgAABAgQIEDB4/QABAgQIECBAgEBawOBN1yscAQIECBAgQICAwesHCBAgQIAAAQIE0gIGb7pe4QgQIECAAAECBAxeP0CAAAECBAgQIJAWMHjT9QpHgAABAgQIECBg8PoBAgQIECBAgACBtIDBm65XOAIECBAgQIAAAYPXDxAgQIAAAQIECKQFDN50vcIRIECAAAECBAgYvH6AAAECBAgQIEAgLWDwpusVjgABAgQIECBAwOD1AwQIECBAgAABAmkBgzddr3AECBAgQIAAAQIGrx8gQIAAAQIECBBICxi86XqFI0CAAAECBAgQMHj9AAECBAgQIECAQFrA4E3XKxwBAgQIECBAgIDB6wcIECBAgAABAgTSAgZvul7hCBAgQIAAAQIEDF4/QIAAAQIECBAgkBYweNP1CkeAAAECBAgQIGDw+gECBAgQIECAAIG0gMGbrlc4AgQIECBAgAABg9cPECBAgAABAgQIpAUM3nS9whEgQIAAAQIECBi8foAAAQIECBAgQCAtYPCm6xWOAAECBAgQIEDA4PUDBAgQIECAAAECaQGDN12vcAQIECBAgAABAgavHyBAgAABAgQIEEgLGLzpeoUjQIAAAQIECBAweP0AAQIECBAgQIBAWsDgTdcrHAECBAgQIECAgMHrBwgQIECAAAECBNICBm+6XuEIECBAgAABAgQMXj9AgAABAgQIECCQFjB40/UKR4AAAQIECBAgYPD6AQIECBAgQIAAgbSAwZuuVzgCBAgQIECAAAGD1w8QIECAAAECBAikBQzedL3CESBAgAABAgQIGLx+gAABAgQIECBAIC1g8KbrFY4AAQIECBAgQMDg9QMECBAgQIAAAQJpAYM3Xa9wBAgQIECAAAECBq8fIECAAAECBAgQSAsYvOl6hSNAgAABAgQIEDB4/QABAgQIECBAgEBawOBN1yscAQIECBAgQICAwesHCBAgQIAAAQIE0gIGb7pe4QgQIECAAAECBAxeP0CAAAECBAgQIJAWMHjT9QpHgAABAgQIECBg8PoBAgQIECBAgACBtIDBm65XOAIECBAgQIAAAYPXDxAgQIAAAQIECKQFDN50vcIRIECAAAECBAgYvH6AAAECBAgQIEAgLWDwpusVjgABAgQIECBAwOD1AwQIECBAgAABAmkBgzddr3AECBAgQIAAAQIGrx8gQIAAAQIECBBICxi86XqFI0CAAAECBAgQMHj9AAECBAgQIECAQFrA4E3XKxwBAgQIECBAgIDB6wcIECBAgAABAgTSAgZvul7hCBAgQIAAAQIEDF4/QIAAAQIECBAgkBYweNP1CkeAAAECBAgQIGDw+gECBAgQIECAAIG0gMGbrlc4AgQIECBAgAABg9cPECBAgAABAgQIpAUM3nS9whEgQIAAAQIECBi8foAAAQIECBAgQCAtYPCm6xWOAAECBAgQIEDA4PUDBAgQIECAAAECaQGDN12vcAQIECBAgAABAgavHyBAgAABAgQIEEgLGLzpeoUjQIAAAQIECBAweP0AAQIECBAgQIBAWsDgTdcrHAECBAgQIECAgMHrBwgQIECAAAECBNICBm+6XuEIECBAgAABAgQMXj9AgAABAgQIECCQFjB40/UKR4AAAQIECBAgYPD6AQIECBAgQIAAgbSAwZuuVzgCBAgQIECAAAGD1w8QIECAAAECBAikBQzedL3CESBAgAABAgQIGLx+gAABAgQIECBAIC1g8KbrFY4AAQIECBAgQMDg9QMECBAgQIAAAQJpAYM3Xa9wBAgQIECAAAECBq8fIECAAAECBAgQSAsYvOl6hSNAgAABAgQIEDB4/QABAgQIECBAgEBawOBN1yscAQIECBAgQICAwesHCBAgQIAAAQIE0gIGb7pe4QgQIECAAAECBAxeP0CAAAECBAgQIJAWMHjT9QpHgAABAgQIECBg8PoBAgQIECBAgACBtIDBm65XOAIECBAgQIAAAYPXDxAgQIAAAQIECKQFDN50vcIRIECAAAECBAgYvH6AAAECBAgQIEAgLWDwpusVjgABAgQIECBAwOD1AwQIECBAgAABAmkBgzddr3AECBAgQIAAAQIGrx8gQIAAAQIECBBICxi86XqFI0CAAAECBAgQMHj9AAECBAgQIECAQFrA4E3XKxwBAgQIECBAgIDB6wcIECBAgAABAgTSAgZvul7hCBAgQIAAAQIEDF4/QIAAAQIECBAgkBYweNP1CkeAAAECBAgQIGDw+gECBAgQIECAAIG0gMGbrlc4AgQIECBAgAABg9cPECBAgAABAgQIpAUM3nS9whEgQIAAAQIECBi8foAAAQIECBAgQCAtYPCm6xWOAAECBAgQIEDA4PUDBAgQIECAAAECaQGDN12vcAQIECBAgAABAgavHyBAgAABAgQIEEgLGLzpeoUjQIAAAQIECBAweP0AAQIECBAgQIBAWsDgTdcrHAECBAgQIECAgMHrBwgQIECAAAECBNICBm+6XuEIECBAgAABAgQMXj9AgAABAgQIECCQFjB40/UKR4AAAQIECBAgYPD6AQIECBAgQIAAgbSAwZuuVzgCBAgQIECAAAGD1w8QIECAAAECBAikBQzedL3CESBAgAABAgQIGLx+gAABAgQIECBAIC1g8KbrFY4AAQIECBAgQMDg9QMECBAgQIAAAQJpAYM3Xa9wBAgQIECAAAECBq8fIECAAAECBAgQSAsYvOl6hSNAgAABAgQIEDB4/QABAgQIECBAgEBawOBN1yscAQIECBAgQICAwesHCBAgQIAAAQIE0gIGb7pe4QgQIECAAAECBAxeP0CAAAECBAgQIJAWMHjT9QpHgAABAgQIECBg8PoBAgQIECBAgACBtIDBm65XOAIECBAgQIAAAYPXDxAgQIAAAQIECKQFDN50vcIRIECAAAECBAgYvH6AAAECBAgQIEAgLWDwpusVjgABAgQIECBAwOD1AwQIECBAgAABAmkBgzddr3AECBAgQIAAAQIGrx8gQIAAAQIECBBICxi86XqFI0CAAAECBAgQMHj9AAECBAgQIECAQFrA4E3XKxwBAgQIECBAgIDB6wcIECBAgAABAgTSAgZvul7hCBAgQIAAAQIEDF4/QIAAAQIECBAgkBYweNP1CkeAAAECBAgQIGDw+gECBAgQIECAAIG0gMGbrlc4AgQIECBAgAABg9cPECBAgAABAgQIpAUM3nS9whEgQIAAAQIECBi8foAAAQIECBAgQCAtYPCm6xWOAAECBAgQIEDA4PUDBAgQIECAAAECaQGDN12vcAQIECBAgAABAgavHyBAgAABAgQIEEgLGLzpeoUjQIAAAQIECBAweP0AAQIECBAgQIBAWsDgTdcrHAECBAgQIECAgMHrBwgQIECAAAECBNICBm+6XuEIECBAgAABAgQMXj9AgAABAgQIECCQFjB40/UKR4AAAQIECBAgYPD6AQIECBAgQIAAgbSAwZuuVzgCBAgQIECAAAGD1w8QIECAAAECBAikBQzedL3CESBAgAABAgQIGLx+gAABAgQIECBAIC1g8KbrFY4AAQIECBAgQMDg9QMECBAgQIAAAQJpAYM3Xa9wBAgQIECAAAECBq8fIECAAAECBAgQSAsYvOl6hSNAgAABAgQIEDB4/QABAgQIECBAgEBawOBN1yscAQIECBAgQICAwesHCBAgQIAAAQIE0gIGb7pe4QgQIECAAAECBAxeP0CAAAECBAgQIJAWMHjT9QpHgAABAgQIECBg8PoBAgQIECBAgACBtIDBm65XOAIECBAgQIAAAYPXDxAgQIAAAQIECKQFDN50vcIRIECAAAECBAgYvH6AAAECBAgQIEAgLWDwpusVjgABAgQIECBAwOD1AwQIECBAgAABAmkBgzddr3AECBAgQIAAAQIGrx8gQIAAAQIECBBICxi86XqFI0CAAAECBAgQMHj9AAECBAgQIECAQFrA4E3XKxwBAgQIECBAgIDB6wcIECBAgAABAgTSAgZvul7hCBAgQIAAAQIEDF4/QIAAAQIECBAgkBYweNP1CkeAAAECBAgQIGDw+gECBAgQIECAAIG0gMGbrlc4AgQIECBAgAABg9cPECBAgAABAgQIpAUM3nS9whEgQIAAAQIECBi8foAAAQIECBAgQCAtYPCm6xWOAAECBAgQIEDA4PUDBAgQIECAAAECaQGDN12vcAQIECBAgAABAgavHyBAgAABAgQIEEgLGLzpeoUjQIAAAQIECBAweP0AAQIECBAgQIBAWsDgTdcrHAECBAgQIECAgMHrBwgQIECAAAECBNICBm+6XuEIECBAgAABAgQMXj9AgAABAgQIECCQFjB40/UKR4AAAQIECBAgYPD6AQIECBAgQIAAgbSAwZuuVzgCBAgQIECAAAGD1w8QIECAAAECBAikBQzedL3CESBAgAABAgQIGLx+gAABAgQIECBAIC1g8KbrFY4AAQIECBAgQMDg9QMECBAgQIAAAQJpAYM3Xa9wBAgQIECAAAECBq8fIECAAAECBAgQSAsYvOl6hSNAgAABAgQIEDB4/QABAgQIECBAgEBawOBN1yscAQIECBAgQICAwesHCBAgQIAAAQIE0gIGb7pe4QgQIECAAAECBAxeP0CAAAECBAgQIJAWMHjT9QpHgAABAgQIECBg8PoBAgQIECBAgACBtIDBm65XOAIECBAgQIAAAYPXDxAgQIAAAQIECKQFDN50vcIRIECAAAECBAgYvH6AAAECBAgQIEAgLWDwpusVjgABAgQIECBAwOD1AwQIECBAgAABAmkBgzddr3AECBAgQIAAAQIGrx8gQIAAAQIECBBICxi86XqFI0CAAAECBAgQMHj9AAECBAgQIECAQFrA4E3XKxwBAgQIECBAgIDB6wcIECBAgAABAgTSAgZvul7hCBAgQIAAAQIEDF4/QIAAAQIECBAgkBYweNP1CkeAAAECBAgQIGDw+gECBAgQIECAAIG0gMGbrlc4AgQIECBAgAABg9cPECBAgAABAgQIpAUM3nS9whEgQIAAAQIECBi8foAAAQIECBAgQCAtYPCm6xWOAAECBAgQIEDA4PUDBAgQIECAAAECaQGDN12vcAQIECBAgAABAgavHyBAgAABAgQIEEgLGLzpeoUjQIAAAQIECBAweP0AAQIECBAgQIBAWsDgTdcrHAECBAgQIECAgMHrBwgQIECAAAECBNICBm+6XuEIECBAgAABAgQMXj9AgAABAgQIECCQFjB40/UKR4AAAQIECBAgYPD6AQIECBAgQIAAgbSAwZuuVzgCBAgQIECAAAGD1w8QIECAAAECBAikBQzedL3CESBAgAABAgQIGLx+gAABAgQIECBAIC1g8KbrFY4AAQIECBAgQMDg9QMECBAgQIAAAQJpAYM3Xa9wBAgQIECAAAECBq8fIECAAAECBAgQSAsYvOl6hSNAgAABAgQIEDB4/QABAgQIECBAgEBawOBN1yscAQIECBAgQICAwesHCBAgQIAAAQIE0gIGb7pe4QgQIECAAAECBAxeP0CAAAECBAgQIJAWMHjT9QpHgAABAgQIECBg8PoBAgQIECBAgACBtIDBm65XOAIECBAgQIAAAYPXDxAgQIAAAQIECKQFDN50vcIRIECAAAECBAgYvH6AAAECBAgQIEAgLWDwpusVjgABAgQIECBAwOD1AwQIECBAgAABAmkBgzddr3AECBAgQIAAAQIGrx8gQIAAAQIECBBICxi86XqFI0CAAAECBAgQMHj9AAECBAgQIECAQFrA4E3XKxwBAgQIECBAgIDB6wcIECBAgAABAgTSAgZvul7hCBAgQIAAAQIEDF4/QIAAAQIECBAgkBYweNP1CkeAAAECBAgQIGDw+gECBAgQIECAAIG0gMGbrlc4AgQIECBAgAABg9cPECBAgAABAgQIpAUM3nS9whEgQIAAAQIECBi8foAAAQIECBAgQCAtYPCm6xWOAAECBAgQIEDA4PUDBAgQIECAAAECaQGDN12vcAQIECBAgAABAgavHyBAgAABAgQIEEgLGLzpeoUjQIAAAQIECBAweP0AAQIECBAgQIBAWsDgTdcrHAECBAgQIECAgMHrBwgQIECAAAECBNICBm+6XuEIECBAgAABAgQMXj9AgAABAgQIECCQFjB40/UKR4AAAQIECBAgYPD6AQIECBAgQIAAgbSAwZuuVzgCBAgQIECAAAGD1w8QIECAAAECBAikBQzedL3CESBAgAABAgQIGLx+gAABAgQIECBAIC1g8KbrFY4AAQIECBAgQMDg9QMECBAgQIAAAQJpAYM3Xa9wBAgQIECAAAECBq8fIECAAAECBAgQSAsYvOl6hSNAgAABAgQIEDB4/QABAgQIECBAgEBawOBN1yscAQIECBAgQICAwesHCBAgQIAAAQIE0gIGb7pe4QgQIECAAAECBAxeP0CAAAECBAgQIJAWMHjT9QpHgAABAgQIECBg8PoBAgQIECBAgACBtIDBm65XOAIECBAgQIAAAYPXDxAgQIAAAQIECKQFDN50vcIRIECAAAECBAgYvH6AAAECBAgQIEAgLWDwpusVjgABAgQIECBAwOD1AwQIECBAgAABAmkBgzddr3AECBAgQIAAAQIGrx8gQIAAAQIECBBICxi86XqFI0CAAAECBAgQMHj9AAECBAgQIECAQFrA4E3XKxwBAgQIECBAgIDB6wcIECBAgAABAgTSAgZvul7hCBAgQIAAAQIEDF4/QIAAAQIECBAgkBYweNP1CkeAAAECBAgQIGDw+gECBAgQIECAAIG0gMGbrlc4AgQIECBAgAABg9cPECBAgAABAgQIpAUM3nS9whEgQIAAAQIECBi8foAAAQIECBAgQCAtYPCm6xWOAAECBAgQIEDA4PUDBAgQIECAAAECaQGDN12vcAQIECBAgAABAgavHyBAgAABAgQIEEgLGLzpeoUjQIAAAQIECBAweP0AAQIECBAgQIBAWsDgTdcrHAECBAgQIECAgMHrBwgQIECAAAECBNICBm+6XuEIECBAgAABAgQMXj9AgAABAgQIECCQFjB40/UKR4AAAQIECBAgYPD6AQIECBAgQIAAgbSAwZuuVzgCBAgQIECAAAGD1w8QIECAAAECBAikBQzedL3CESBAgAABAgQIGLx+gAABAgQIECBAIC1g8KbrFY4AAQIECBAgQMDxzYuwAAABWUlEQVTg9QMECBAgQIAAAQJpAYM3Xa9wBAgQIECAAAECBq8fIECAAAECBAgQSAsYvOl6hSNAgAABAgQIEDB4/QABAgQIECBAgEBawOBN1yscAQIECBAgQICAwesHCBAgQIAAAQIE0gIGb7pe4QgQIECAAAECBAxeP0CAAAECBAgQIJAWMHjT9QpHgAABAgQIECBg8PoBAgQIECBAgACBtIDBm65XOAIECBAgQIAAAYPXDxAgQIAAAQIECKQFDN50vcIRIECAAAECBAgYvH6AAAECBAgQIEAgLWDwpusVjgABAgQIECBAwOD1AwQIECBAgAABAmkBgzddr3AECBAgQIAAAQIGrx8gQIAAAQIECBBICxi86XqFI0CAAAECBAgQMHj9AAECBAgQIECAQFrA4E3XKxwBAgQIECBAgIDB6wcIECBAgAABAgTSAgZvul7hCBAgQIAAAQIEHml/AlkFEcVJAAAAAElFTkSuQmCC"></canvas>
+
+	<!--
+		<p style="clear:both">pointer: (<span id="pointerAction"> </span>) <span id="pointerLoc"> </span></p>
+	-->
+
+	<input name="labelField" id="labelInput" type="text" value="">
+
+
+	
+
+	
+
+
+	
+	
+
+	
+</div>
+
+
+<div class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-front ui-dialog-buttons ui-draggable" tabindex="-1" role="dialog" aria-describedby="dialog-splits" aria-labelledby="ui-id-1" style="display: none;"><div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span id="ui-id-1" class="ui-dialog-title"></span><button class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-dialog-titlebar-close" role="button" aria-disabled="false" title="close"><span class="ui-button-icon-primary ui-icon ui-icon-closethick"></span><span class="ui-button-text">close</span></button></div><div class="c_dialog_splits ui-dialog-content ui-widget-content" id="dialog-splits">
+
+		<p>
+			<canvas id="split-display" width="100" height="100" data-savepage-canvasdatauri="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAAAXNSR0IArs4c6QAAAk1JREFUeF7tnEFNQ2EYBF8FIAAEYABPoKl4QgAIwADcS0IVzCbTEDI977ebfyZ5x54u54fLof/kibe76wuevuWXyO84juP0K+T5U36IXP/yeB04f8hDcv3rfUJkxKw+IYyXnk6IjpgNJITx0tMJ0RGzgYQwXno6ITpiNpAQxktPJ0RHzAYSwnjp6YToiNlAQhgvPZ0QHTEbSAjjpacToiNmAwlhvPR0QnTEbCAhjJeeToiOmA0khPHS0wnREbOBhDBeejohOmI2kBDGS08nREfMBhLCeOnphOiI2UBCGC89nRAdMRtICOOlpxOiI2YDCWG89HRCdMRsICGMl55OiI6YDSSE8dLTCdERs4GEMF56OiE6YjaQEMZLTydER8wGEsJ46emE6IjZQEIYLz2dEB0xG0gI46WnE6IjZgMJYbz0dEJ0xGzgfwk5Hcf5nQH4a+mE/DEjCUmIQ+D3TzD7ZDlwl9aELNTEm4SIcJfqhCzUxJuEiHCX6oQs1MSbhIhwl+qELNTEm4SIcJfqhCzUxJuEiHCX6oQs1MSbhIhwl+qELNTEm4SIcJfqhCzUxJuEiHCX6oQs1MSbhIhwl+qELNTEm4SIcJfqhCzUxJuEiHCX6oQs1MSbhIhwl+qELNTEm4SIcJfqhCzUxJuEiHCX6oQs1MSbhIhwl+qELNTEm4SIcJfqhCzUxJuEiHCX6oQs1MSbhIhwl+qELNTEm4SIcJfqhCzUxJuEiHCX6oQs1MSbhIhwl+qELNTEm/8l5P4iorpN9dvddefp6zZ74soPUT+bQ8kFfLkAAAAASUVORK5CYII="></canvas>
+		</p>
+		<div class="radio_vert_horz" id="radio_vert" style="DISPLAY: none">
+			<label class="c_vertical" for="vert">&nbsp;</label>
+			<input type="radio" name="vert_horiz" id="vert" value="Vertical" checked="">
+			<label class="c_horizontal" for="horiz">&nbsp;</label>
+			<input type="radio" name="vert_horiz" id="horiz" value="Horizontal">
+		</div>
+
+		<p>
+			<label class="c_number_part" for="split-slider-field">&nbsp;</label>
+			<input type="text" id="split-slider-field" style="border:0; color:#f6931f; font-weight:bold;" value="2" readonly="">
+		</p>
+
+		<div id="split-slider" class="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all" aria-disabled="false"><a class="ui-slider-handle ui-state-default ui-corner-all" href="https://educn101.sitehost.iu.edu/#" style="left: 0%;"></a></div>
+
+		<div id="radio_whole">
+			<label class="c_part_whole" for="whole">&nbsp;</label>
+			<input type="radio" name="whole_part" id="whole" value="Whole" checked="">
+			<br>
+			<label class="c_part_part" for="part">&nbsp;</label>
+			<input type="radio" name="whole_part" id="part" value="Part">
+		</div>
+
+	</div><div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"><div class="ui-dialog-buttonset"><button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Ok</span></button><button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Cancel</span></button></div></div></div><div class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-front ui-dialog-buttons ui-draggable" tabindex="-1" role="dialog" aria-describedby="dialog-properties" aria-labelledby="ui-id-2" style="display: none;"><div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span id="ui-id-2" class="ui-dialog-title"></span><button class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-dialog-titlebar-close" role="button" aria-disabled="false" title="close"><span class="ui-button-icon-primary ui-icon ui-icon-closethick"></span><span class="ui-button-text">close</span></button></div><div class="c_dialog_properties ui-dialog-content ui-widget-content" id="dialog-properties">
+
+		<label class="c_iterations" for="same">&nbsp;</label>
+			<div id="radio_iterate_p" title="Itterations">
+				<p>
+					<label class="c_dont_create" for="same">&nbsp;</label>
+					<input type="radio" name="create" id="same" value="Same">
+					<br>
+					<label class="c_create_new" for="new">&nbsp;</label>
+					<input type="radio" name="create" id="new" value="New" checked="">
+					<br>
+					---
+					<br>
+
+					<label class="c_two_way" for="two_way">&nbsp;</label>
+					<input type="radio" name="two_ittr" id="two_way" value="Two_way">
+					<br>
+					<label class="c_one_way" for="one_way">&nbsp;</label>
+					<input type="radio" name="two_ittr" id="one_way" value="One_way" checked="">
+				</p>
+			</div>
+			<br>
+			<label class="c_splits" for="same">&nbsp;</label>
+			<div id="radio_split_p" title="Split or Manual Split">
+				<p>
+					<label class="c_vert_horiz" for="two_horiz">&nbsp;</label>
+					<input type="radio" name="two_split" id="two_horiz" value="Two_horiz">
+					<br>
+					<label class="c_only_vert" for="one_horiz">&nbsp;</label>
+					<input type="radio" name="two_split" id="one_horiz" value="One_horiz" checked="">
+				</p>
+				</div>
+
+				<!--
+			<label class="c_lang" for="lang">&nbsp;</label>
+     		<div id="radio_lang_tr" title="Language">
+				<p>
+					<fieldset class="elist">
+
+    					<ul>
+            				<li><input type="radio" name="lang" id="lang_tr" value="lang_tur" /><label class="c_lang_tur" for="lang_tr"></label></li>
+            				<li><input type="radio" name="lang" id="lang_en" value="lang_eng" checked /><label class="c_lang_eng" for="lang_en"></label></li>
+        				</ul>
+    				</fieldset>
+				</p>
+			</div>
+		-->
+			<br>
+
+			<div id="tools2">
+				<div class="toolGroup" style="text-align:center">
+					<p>
+						<label class="c_color" for="color">&nbsp;</label>
+					</p>
+							<a class="colorBlock1 color1" id="setColor1_2">&nbsp;</a>
+							<a class="colorBlock1 color2" id="setColor2_2">&nbsp;</a>
+							<a class="colorBlock1 color3" id="setColor3_2">&nbsp;</a>
+							<a class="colorBlock1 color4" id="setColor4_2">&nbsp;</a>
+							<a class="colorBlock1 color5" id="setColor5_2">&nbsp;</a>
+							<a class="colorBlock1 color6" id="setColor6_2">&nbsp;</a>
+							<a class="colorBlock1 color7" id="setColor7_2">&nbsp;</a>
+							<a class="colorBlock1 color8" id="setColor8_2">&nbsp;</a>
+							<a class="colorBlock1 color9" id="setColor9_2">&nbsp;</a>
+							<a class="colorBlock1 color10 colorSelected" id="setColor10">&nbsp;</a>
+							<a class="colorBlock1 color11" id="setColor11">&nbsp;</a>
+							<a class="colorBlock1 color12" id="setColor12">&nbsp;</a>
+							<a class="colorBlock1 color13" id="setColor13">&nbsp;</a>
+							<a class="colorBlock1 color14" id="setColor14">&nbsp;</a>
+							<a class="colorBlock1 color15" id="setColor15">&nbsp;</a>
+							<a class="colorBlock1 color16" id="setColor16">&nbsp;</a>
+				</div>
+			</div>
+	</div><div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"><div class="ui-dialog-buttonset"><button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Ok</span></button><button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Cancel</span></button></div></div></div><div class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-front ui-dialog-buttons ui-draggable" tabindex="-1" role="dialog" aria-describedby="dialog-iterate" aria-labelledby="ui-id-3" style="display: none;"><div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span id="ui-id-3" class="ui-dialog-title"></span><button class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-dialog-titlebar-close" role="button" aria-disabled="false" title="close"><span class="ui-button-icon-primary ui-icon ui-icon-closethick"></span><span class="ui-button-text">close</span></button></div><div id="dialog-iterate" class="c_dialog_iterate ui-dialog-content ui-widget-content">
+
+		<div class="radio_itterate_vert_horz" id="iterate_vert-horiz" style="DISPLAY: none">
+			<label class="c_vertical" for="iterate_vert">&nbsp;</label>
+			<input type="radio" name="vert_horiz" id="iterate_vert" value="Vertical" checked="">
+			<label class="c_horizontal" for="iterate_horiz">&nbsp;</label>
+			<input type="radio" name="vert_horiz" id="iterate_horiz" value="Horizontal">
+		</div>
+
+		<p>
+			<label class="c_number_iterations" for="iterate-field">&nbsp;</label>
+			<input type="text" id="iterate-field" style="border:1; color:#000000; font-weight:bold;" value="2">
+		</p>
+
+	</div><div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"><div class="ui-dialog-buttonset"><button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Ok</span></button><button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Cancel</span></button></div></div></div><div class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-front ui-dialog-buttons ui-draggable" tabindex="-1" role="dialog" aria-describedby="dialog-make" aria-labelledby="ui-id-4" style="display: none;"><div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span id="ui-id-4" class="ui-dialog-title"></span><button class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-dialog-titlebar-close" role="button" aria-disabled="false" title="close"><span class="ui-button-icon-primary ui-icon ui-icon-closethick"></span><span class="ui-button-text">close</span></button></div><div id="dialog-make" class="c_dialog_make ui-dialog-content ui-widget-content">
+
+		<p>
+			<label class="c_number_whole" for="whole-field">Write Fraction:</label>
+			</p><table style="width:10">
+
+      <tbody>
+        <tr>
+          <td rowspan="2"><input type="text" id="whole-field" style="border:1; color:#000000; font-weight:bold; text-align:right;" size="4" value=" "></td>
+          <td style="border-bottom:solid 1px"><input type="text" id="num-field" style="border:1; color:#000000; font-weight:bold; text-align:center;" size="4"></td>
+          </tr>
+          <tr>
+            <td><input type="text" id="denum-field" style="border:1; color:#000000; font-weight:bold; text-align:center;" size="4"></td>
+          </tr>
+      </tbody>
+   </table>
+			&nbsp;&nbsp;
+
+
+		<p></p>
+
+	</div><div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"><div class="ui-dialog-buttonset"><button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Ok</span></button><button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Cancel</span></button></div></div></div><div class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-front ui-dialog-buttons ui-draggable ui-resizable" tabindex="-1" role="dialog" aria-describedby="dialog-file" aria-labelledby="ui-id-5" style="display: none; position: absolute;"><div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span id="ui-id-5" class="ui-dialog-title"></span><button class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-dialog-titlebar-close" role="button" aria-disabled="false" title="close"><span class="ui-button-icon-primary ui-icon ui-icon-closethick"></span><span class="ui-button-text">close</span></button></div><div class="c_choose_file ui-dialog-content ui-widget-content" id="dialog-file">
+		<p class="c_open_file">&nbsp;</p>
+		<p></p>
+		<p></p>
+		<input type="file" id="files" name="files[]" multiple="">
+<!--		<output id="list"></output> -->
+	</div><div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"><div class="ui-dialog-buttonset"><button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Cancel</span></button></div></div><div class="ui-resizable-handle ui-resizable-n" style="z-index: 90;"></div><div class="ui-resizable-handle ui-resizable-e" style="z-index: 90;"></div><div class="ui-resizable-handle ui-resizable-s" style="z-index: 90;"></div><div class="ui-resizable-handle ui-resizable-w" style="z-index: 90;"></div><div class="ui-resizable-handle ui-resizable-se ui-icon ui-icon-gripsmall-diagonal-se" style="z-index: 90;"></div><div class="ui-resizable-handle ui-resizable-sw" style="z-index: 90;"></div><div class="ui-resizable-handle ui-resizable-ne" style="z-index: 90;"></div><div class="ui-resizable-handle ui-resizable-nw" style="z-index: 90;"></div></div></body><grammarly-desktop-integration data-grammarly-shadow-root="true"><template shadowrootmode="open"><style>
+      div.grammarly-desktop-integration {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+        -moz-user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select:none;
+        user-select:none;
+      }
+
+      div.grammarly-desktop-integration:before {
+        content: attr(data-content);
+      }
+    </style><div aria-label="grammarly-integration" role="group" tabindex="-1" class="grammarly-desktop-integration" data-content="{&quot;mode&quot;:&quot;limited&quot;,&quot;isActive&quot;:false,&quot;isUserDisabled&quot;:false}"></div></template></grammarly-desktop-integration><iframe id="savepage-download-iframe" src="./Fraction_Bars_files/download-iframe-GC.html" data-savepage-key="0-0" style="display: none !important;"></iframe></html>
