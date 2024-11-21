@@ -1,0 +1,51 @@
+.bar_title:before{content: "Fraction Bar";}
+.c_bar:before{content: "Bar";}
+.c_mat:before{content: "Mat";}
+.c_copy:before{content: "Copy";}
+.c_repeat:before{content: "Repeat";}
+.c_iterate:before{content: "Iterate";}
+.c_join:before{content: "Join";}
+.c_delete:before{content: "Delete";}
+.c_parts:before{content: "Parts";}
+.c_pieces:before{content: "Line";}
+.c_b_apart:before{content: "Break Apart";}
+.c_pullout:before{content: "Pull Out Parts";}
+.c_c_parts:before{content: "Clear Parts";}
+.c_set_unit:before{content: "Set Unit Bar";}
+.c_measure:before{content: "Measure";}
+.c_label:before{content: "Label";}
+.c_undo:before{content: "Undo";}
+.c_redo:before{content: "Redo";}
+.c_save:before{content: "Save";}
+.c_open:before{content: "Open";}
+.c_new:before{content: "New";}
+.c_print:before{content: "Print";}
+.c_properties:before{content: "Properties";}
+.c_hide:before{content: "Hide";}
+.c_show:before{content: "Show";}
+.c_previous:before{content: "Previous";}
+.c_next:before{content: "Next";}
+.c_dialog_splits title:before {content: "Partition part of bar";}
+.c_vertical:before{content: "Vertical";}
+.c_horizontal:before{content: "Horizontal";}
+.c_number_part:before{content: "Number of parts:";}
+.c_part_whole:before{content: "Partition whole bar";}
+.c_part_part:before{content: "Partition part of bar";}
+.c_dialog_properties title:before {content: "Partition part of bar";}
+.c_iterations:before{content: "Iterations";}
+.c_dont_create:before{content: "Don't Create New Bar";}
+.c_create_new:before{content: "Create New Bar";}
+.c_two_way:before{content: "Two way Iterate";}
+.c_one_way:before{content: "Only one way Iterate";}
+.c_splits:before{content: "Splits (Parts)";}
+.c_vert_horiz:before{content: "Vertical or Horizontal Split";}
+.c_only_vert:before{content: "Only vertical split";}
+.c_lang:before{content: "Language";}
+.c_lang_tur:before{content: "Turkish";}
+.c_lang_eng:before{content: "English";}
+.c_color:before{content: "Background Color";}
+.c_dialog_iterate title:before {content: "Iterate";}
+.c_number_iterations:before{content: "Number of iterations:";}
+.c_c_choose_file title:before {content: "Choose a File";}
+.c_c_open_file:before{content: "Use the button below to choose a FractionBars file to open.";}
+.c_split_alert:before{content: "Please select a bar to partition.";}

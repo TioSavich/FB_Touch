@@ -1,0 +1,110 @@
+
+/*
+// Copyright University of Massachusetts Dartmouth 2013
+//
+// Designed and built by James P. Burke and Jason Orrill
+//
+// This Javascript version of Fraction Bars is based on
+// the Transparent Media desktop version of Fraction Bars,
+// which in turn was based on the original TIMA Bars software
+// by John Olive and Leslie Steffe.
+// We thank them for allowing us to update that product.
+*/
+
+
+body, p, td {
+	font-family: Helvetica, Arial, sans-serif ;
+	font-size: 12px ;
+}
+a {
+	cursor: pointer;
+}
+
+.skip-link {display:none;}
+
+#labelInput {
+	display: none ;
+}
+
+#fbCanvas {
+	background-color: #EFEFEF;
+	border: 1px gray groove;
+}
+#tools {
+	float:left ;
+	width: 100px ;
+}
+#tools .toolGroup {
+	margin-bottom: 12px ;
+}
+#tools .toolGroup a {
+	border: 1px solid #999999 ;
+	display: block ;
+	width: 80px ;
+	text-align: center ;
+	margin: 4px ;
+	padding: 2px ;
+}
+
+#tools .toolGroup a.colorBlock {
+	float: left;
+	border: 1px solid gray;
+	width: 10px;
+	height: 10px;
+	display: inline;
+	margin: 3px 3px 4px 4px;
+}
+
+#tools .toolGroup a.colorBlock1 {
+	float: left;
+	border: 1px solid gray;
+	width: 10px;
+	height: 10px;
+	display: inline;
+	margin: 3px 3px 4px 4px;
+}
+
+#tools .toolGroup a.hideShow {
+	float: left;
+	border: 1px solid gray;
+	width: 35px;
+	display: inline;
+	margin: 3px 3px 4px 4px;
+}
+
+#tools .toolGroup a.colorSelected {
+	border:1px solid black ;
+}
+
+#tools .toolGroup a.toolSelected {
+	border:1px solid black ;
+	background-color: #EEEEEE ;
+}
+
+#split-display {
+	float: right;
+	background-color: #EFEFEF;
+	border: 1px gray groove;
+}
+
+
+#split-slider {
+	width: 250px;
+}
+
+.color10 {background-color: #FFFF66;}
+.color3 {background-color: #ACBEFF;}
+.color7 {background-color: #E6E6E6;}
+.color5 {background-color: #FFFFFF;}
+.color12 {background-color: #CCFF66;}
+.color9 {background-color: #FFCC66;}
+.color13 {background-color: #DD99FF;}
+.color14 {background-color: #FF92DA;}
+.color1 {background-color: #A8FFF4;}
+.color6 {background-color: #EFEFEF;}
+.color2 {background-color: #DDFFF0;}
+.color4 {background-color: #707EFF;}
+.color8 {background-color: #D6D6D6;}
+.color16 {background-color: #FF8C8C;}
+.color11 {background-color: #E9FF66;}
+.color15 {background-color: #F56ED0;}
