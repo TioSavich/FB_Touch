@@ -255,10 +255,42 @@
 <!--		<output id="list"></output> -->
 	</div>
 	
-<script>
+
+		<script>
+    let activeTouchId = null;
+
+    function handleTouchStart(event) {
+      if (event.touches.length > 1) {
+        event.preventDefault(); // Prevent multi-touch
+      } else if (activeTouchId === null) { 
+        activeTouchId = event.touches[0].identifier; // Track the first touch
+      } else {
+        event.preventDefault(); // Ignore subsequent touches
+      }
+    }
+
+    function handleTouchEnd(event) {
+      if (event.changedTouches[0].identifier === activeTouchId) {
+        activeTouchId = null; // Reset when the first touch ends
+      }
+    }
+
+    const fbCanvas = document.getElementById('fbCanvas');
+    const splitDisplayCanvas = document.getElementById('split-display');
+
+    fbCanvas.addEventListener('touchstart', handleTouchStart);
+    fbCanvas.addEventListener('touchend', handleTouchEnd);
+
+    splitDisplayCanvas.addEventListener('touchstart', handleTouchStart);
+    splitDisplayCanvas.addEventListener('touchend', handleTouchEnd); 
+  </script>
+		<script>
 const manager = new Hammer.Manager(fbCanvas, {
 		touchAction: 'none', // Prevent browser's default multi-touch behavior
 		inputClass: Hammer.TouchInput, // Ensure touch-specific handling
-	  });</script>
+	  });
+
+
+</script>
 
       </html>
