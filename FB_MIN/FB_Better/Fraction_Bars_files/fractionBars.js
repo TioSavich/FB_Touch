@@ -28,6 +28,9 @@ include_js('class/FractionBarsCanvas.js', 'js/');
 
 */
 
+
+
+
 var point1 = null ;
 var point2 = null;
 var fbContext = null ;
@@ -45,6 +48,137 @@ $(document).ready(function() {
 	hideButton("action_previous");
 	hideButton("action_next");
 
+    const fbCanvas = document.getElementById('fbCanvas');
+
+    interact(fbCanvas)
+        .on('tap', function (event) {
+            const e = event.originalEvent;
+            handleCanvasTap(e);
+        })
+        .on('down', function (event) {
+            const e = event.originalEvent;
+            handleCanvasDown(e);
+        })
+        .on('up', function (event) {
+            const e = event.originalEvent;
+            handleCanvasUp(e);
+        })
+        .on('move', function (event) {
+            const e = event.originalEvent;
+            handleCanvasMove(e);
+        });
+
+    function handleCanvasTap(e) {
+        var fbImg = fbContext.getImageData(0, 0, 1000, 600);
+        fbContext.clearRect(0, 0, 1000, 600);
+        fbContext.putImageData(fbImg, 0, 0);
+    }
+
+    function handleCanvasDown(e) {
+        fbCanvasObj.check_for_drag = true;
+        fbCanvasObj.cacheUndoState();
+
+        updatemouseLoc(e, $(fbCanvas));
+        updatemouseAction('mousedown');
+        fbCanvasObj.mouseDownLoc = Point.createFrommouseEvent(e, $(fbCanvas));
+        var b = fbCanvasObj.barClickedOn();
+        var m = fbCanvasObj.matClickedOn();
+
+        if ((fbCanvasObj.currentAction == 'bar') || (fbCanvasObj.currentAction == "mat")) {
+            fbCanvasObj.saveCanvas();
+        } else if (fbCanvasObj.currentAction == 'repeat') {
+            fbCanvasObj.addUndoState();
+            b.repeat(fbCanvasObj.mouseDownLoc);
+            fbCanvasObj.refreshCanvas();
+        } else {
+            // The click is being used to update the selected bars
+            if (b !== null) {
+                if ($.inArray(b, fbCanvasObj.selectedBars) == -1) { // clicked on bar is not already selected
+                    if (!Utilities.shiftKeyDown) {
+                        fbCanvasObj.clearSelection();
+                    }
+                    $.each(fbCanvasObj.selectedBars, function (index, bar) {
+                        bar.clearSplitSelection();
+                    });
+                    fbCanvasObj.barToFront(b);
+                    fbCanvasObj.selectedBars.push(b);
+                    b.isSelected = true;
+                    b.selectSplit(fbCanvasObj.mouseDownLoc);
+                } else {											// clicked bar is already selected
+                    $.each(fbCanvasObj.selectedBars, function (index, bar) {
+                        bar.clearSplitSelection();
+                    });
+                    if (!Utilities.shiftKeyDown) {
+                        b.selectSplit(fbCanvasObj.mouseDownLoc);
+                    } else {
+                        fbCanvasObj.removeBarFromSelection(b);
+                    }
+                    fbCanvasObj.barToFront(b);
+                }
+                if (fbCanvasObj.currentAction == "manualSplit") {
+                    fbCanvasObj.clearSelection();
+                }
+            } else if (m !== null) {
+                if ($.inArray(m, fbCanvasObj.selectedMats) == -1) { // clicked on mat is not already selected
+                    if (!Utilities.shiftKeyDown) {
+                        fbCanvasObj.clearSelection();
+                    }
+                    m.isSelected = true;
+                    fbCanvasObj.selectedMats.push(m);
+                } else {  // Clicked on mat is already selected
+                    if (Utilities.shiftKeyDown) {
+                        fbCanvasObj.removeMatFromSelection(m);
+                    }
+                }
+            } else {
+                fbCanvasObj.clearSelection();
+            }
+            fbCanvasObj.refreshCanvas();
+        }
+    }
+
+    function handleCanvasUp(e) {
+        updatemouseLoc(e, $(fbCanvas));
+        updatemouseAction('mouseup');
+
+        fbCanvasObj.mouseUpLoc = Point.createFrommouseEvent(e, $(fbCanvas));
+
+        if (fbCanvasObj.currentAction == 'bar') {
+            fbCanvasObj.addUndoState();
+            fbCanvasObj.addBar();
+            fbCanvasObj.clear_selection_button();
+        } else if (fbCanvasObj.currentAction == 'mat') {
+            fbCanvasObj.addUndoState();
+            fbCanvasObj.addMat();
+            fbCanvasObj.clear_selection_button();
+        }
+
+        if (fbCanvasObj.found_a_drag) {
+            fbCanvasObj.finalizeCachedUndoState();
+            fbCanvasObj.check_for_drag = false;
+        }
+
+        fbCanvasObj.mouseUpLoc = null;
+        fbCanvasObj.mouseDownLoc = null;
+        fbCanvasObj.mouseLastLoc = null;
+    }
+
+    function handleCanvasMove(e) {
+        fracEvent = e;
+        updatemouseLoc(e, $(fbCanvas));
+        updatemouseAction('mousemove');
+
+        var p = Point.createFrommouseEvent(e, $(fbCanvas));
+
+        if (fbCanvasObj.currentAction == "manualSplit") {
+            fbCanvasObj.manualSplitPoint = p;
+            fbCanvasObj.refreshCanvas();
+        }
+
+        if (fbCanvasObj.mouseDownLoc !== null) {
+            fbCanvasObj.updateCanvas(p);
+        }
+    }
 
 
 	fbContext = $('#fbCanvas')[0].getContext( '2d' ) ;
