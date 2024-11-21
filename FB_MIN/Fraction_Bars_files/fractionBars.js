@@ -157,30 +157,31 @@ $(document).ready(function() {
     });
 
     $('#fbCanvas').mouseup(function(e) {
-        updateMouseLoc(e, $(this));
-        updateMouseAction('mouseup');
+    updateMouseLoc(e, $(this));
+    updateMouseAction('mouseup');
 
-        fbCanvasObj.mouseUpLoc = Point.createFromMouseEvent(e, $(this));
+    fbCanvasObj.mouseUpLoc = Point.createFromMouseEvent(e, $(this));
 
-        if (fbCanvasObj.currentAction === 'bar') {
-            fbCanvasObj.addUndoState();
-            fbCanvasObj.addBar();
-            fbCanvasObj.clear_selection_button();
-        } else if (fbCanvasObj.currentAction === 'mat') {
-            fbCanvasObj.addUndoState();
-            fbCanvasObj.addMat();
-            fbCanvasObj.clear_selection_button();
-        }
+    if (fbCanvasObj.currentAction === 'bar') {
+        fbCanvasObj.addUndoState();
+        fbCanvasObj.addBar();
+        fbCanvasObj.clear_selection_button();
+        barToolActive = false; // Deactivate the 'bar' tool
+    } else if (fbCanvasObj.currentAction === 'mat') {
+        fbCanvasObj.addUndoState();
+        fbCanvasObj.addMat();
+        fbCanvasObj.clear_selection_button();
+    }
 
-        if (fbCanvasObj.found_a_drag) {
-            fbCanvasObj.finalizeCachedUndoState();
-            fbCanvasObj.check_for_drag = false;
-        }
+    if (fbCanvasObj.found_a_drag) {
+        fbCanvasObj.finalizeCachedUndoState();
+        fbCanvasObj.check_for_drag = false;
+    }
 
-        fbCanvasObj.mouseUpLoc = null;
-        fbCanvasObj.mouseDownLoc = null;
-        fbCanvasObj.mouseLastLoc = null;
-    });
+    fbCanvasObj.mouseUpLoc = null;
+    fbCanvasObj.mouseDownLoc = null;
+    fbCanvasObj.mouseLastLoc = null;
+});
 
     // Color Block Click Handlers
     $('.colorBlock').click(function(e) {
