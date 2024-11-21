@@ -16,7 +16,7 @@ function FractionBarsCanvas(canvasContext) {
 //	this.currentTool = '' ;
 	this.currentAction = '' ;
 	this.canvasState = null ;
-	this.currentFill = '#FFFF66' ;
+	this.currentFill = '#85C1AE' ;
 //	this.barFill = '#FFFF66' ;
 	this.matFill = '#888888' ;
 	this.mouseDownLoc = null ;
