@@ -92,7 +92,26 @@ a {
 	width: 250px;
 }
 
-.color10 {background-color: #FFFF66;}
+
+
+.color10 { background-color: #F9E79F;}
+.color3 {background-color: #D7BDE2;}
+.color7 {background-color: #EAB8B1;}
+.color5 {background-color: #FFFFFF;}
+.color12 { background-color: #8E735B; }
+.color9 {background-color: #2980B9;}
+.color13 {background-color: #85C1AE;}
+.color14 {background-color: #5DADE2;}
+.color1 {background-color: #F38C12;}
+.color6 {background-color: #D35400;}
+.color2 { background-color: #A93226; }
+.color4 {background-color: #7F8C7D;}
+.color8 {background-color: #D6D6D6;}
+.color16 {background-color: #17A085;}
+.color11 {background-color: #A3E4D7;}
+.color15 {background-color: #D7BDE2;}
+
+/* .color10 {background-color: #FFFF66;}
 .color3 {background-color: #ACBEFF;}
 .color7 {background-color: #E6E6E6;}
 .color5 {background-color: #FFFFFF;}
@@ -107,4 +126,4 @@ a {
 .color8 {background-color: #D6D6D6;}
 .color16 {background-color: #FF8C8C;}
 .color11 {background-color: #E9FF66;}
-.color15 {background-color: #F56ED0;}
+.color15 {background-color: #F56ED0;} */
