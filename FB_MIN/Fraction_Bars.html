@@ -16,11 +16,7 @@
 	<!-- <link rel="stylesheet" href="./Fraction_Bars_files/jquery-ui-1.10.3.custom.min.css" type="text/css">
 	<script src="./Fraction_Bars_files/jquery-1.9.1.min.js" type="text/javascript" language="javascript"></script>
 	<script src="./Fraction_Bars_files/jquery-ui-1.10.3.custom.min.js" type="text/javascript" language="javascript"></script> -->
-<script>
-const manager = new Hammer.Manager(fbCanvas, {
-		touchAction: 'none', // Prevent browser's default multi-touch behavior
-		inputClass: Hammer.TouchInput, // Ensure touch-specific handling
-	  });</script>
+
 	<script src="./Fraction_Bars_files/cycle.js" type="text/javascript" language="javascript"></script>
 	<script src="./Fraction_Bars_files/FileSaver.min.js" type="text/javascript" language="javascript"></script>
 	<script src="./Fraction_Bars_files/Blob.js" type="text/javascript" language="javascript"></script>
@@ -263,6 +259,9 @@ const manager = new Hammer.Manager(fbCanvas, {
 		<input type="file" id="files" name="files[]" multiple="">
 <!--		<output id="list"></output> -->
 	</div>
-	
-
+	<script>
+const manager = new Hammer.Manager(fbCanvas, {
+		touchAction: 'none', // Prevent browser's default multi-touch behavior
+		inputClass: Hammer.TouchInput, // Ensure touch-specific handling
+	  });</script>
       </html>
