@@ -38,9 +38,35 @@ Point.prototype.isOnLine = function(line) {
 
 Point.createFrommouseEvent = function(e, elem) {
 	var p = new Point() ;
-	p.x = Math.round((e.clientX - elem.position().left ) + window.pageXOffset) ;
-	p.y = Math.round((e.clientY - elem.position().top) + window.pageYOffset) ;
+	// Modern approach: Get the element's bounding rectangle
+	var rect = (elem.nodeType ? elem : elem[0]).getBoundingClientRect();
+	p.x = Math.round(e.clientX - rect.left + window.pageXOffset) ;
+	p.y = Math.round(e.clientY - rect.top + window.pageYOffset) ;
 	return p ;
+}
+
+// Modern touch event handler - supports both mouse and touch events
+Point.createFromTouchEvent = function(e, elem) {
+	var p = new Point();
+	var clientX, clientY;
+	
+	// Handle touch events
+	if (e.touches && e.touches.length > 0) {
+		clientX = e.touches[0].clientX;
+		clientY = e.touches[0].clientY;
+	} else if (e.changedTouches && e.changedTouches.length > 0) {
+		clientX = e.changedTouches[0].clientX;
+		clientY = e.changedTouches[0].clientY;
+	} else {
+		// Fallback to mouse coordinates
+		clientX = e.clientX;
+		clientY = e.clientY;
+	}
+	
+	var rect = (elem.nodeType ? elem : elem[0]).getBoundingClientRect();
+	p.x = Math.round(clientX - rect.left);
+	p.y = Math.round(clientY - rect.top);
+	return p;
 }
 
 Point.subtract = function(p1, p2) {

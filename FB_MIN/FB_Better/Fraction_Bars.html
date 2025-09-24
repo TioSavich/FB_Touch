@@ -10,7 +10,8 @@
 <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
 <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
 <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script> -->
-<script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+<!-- InteractJS is being phased out for native touch handling -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script> -->
 <link rel="stylesheet" href="./Fraction_Bars_files/fractionBars.css" type="text/css">
 	<link rel="stylesheet" href="./Fraction_Bars_files/lang_eng.css" type="text/css">
 	<link rel="stylesheet" href="./Fraction_Bars_files/deneme.css" type="text/css">
@@ -257,59 +258,9 @@
 	</div>
 	
 	<script>
-		const fbCanvas = document.getElementById('fbCanvas');
-		const splitDisplayCanvas = document.getElementById('split-display');
-	  
-		// interact(fbCanvas)
-		//   .draggable({
-		// 	onmove: function (event) {
-		// 	  const target = event.target;
-		// 	  const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
-		// 	  const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
-	  
-		// 	  target.style.transform = `translate(${x}px, ${y}px)`;
-		// 	  target.setAttribute('data-x', x);
-		// 	  target.setAttribute('data-y', y);
-		// 	},
-		// 	onend: function (event) {
-		// 	  // Handle drag end if necessary
-		// 	}
-		//   })
-		//   .gesturable({
-		// 	onmove: function (event) {
-		// 	  const target = event.target;
-		// 	  const scale = (parseFloat(target.getAttribute('data-scale')) || 1) * (1 + event.ds);
-	  
-		// 	  target.style.transform += ` scale(${scale})`;
-		// 	  target.setAttribute('data-scale', scale);
-		// 	}
-		//   });
-	  
-		interact(splitDisplayCanvas)
-		  .draggable({
-			onmove: function (event) {
-			  const target = event.target;
-			  const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
-			  const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
-	  
-			  target.style.transform = `translate(${x}px, ${y}px)`;
-			  target.setAttribute('data-x', x);
-			  target.setAttribute('data-y', y);
-			},
-			onend: function (event) {
-			  // Handle drag end if necessary
-			}
-		  })
-		  .gesturable({
-			onmove: function (event) {
-			  const target = event.target;
-			  const scale = (parseFloat(target.getAttribute('data-scale')) || 1) * (1 + event.ds);
-	  
-			  target.style.transform += ` scale(${scale})`;
-			  target.setAttribute('data-scale', scale);
-			}
-		  });
-	  </script>
+		// Modern touch handling is now implemented in fractionBars.js
+		// This provides better performance and removes external dependencies
+	</script>
 
 	<!-- <script>
 		let activeTouchId = null;
