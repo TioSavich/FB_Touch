@@ -1,0 +1,11 @@
+{
+  "name": "fraction-bars",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Touch-native, dependency-free, SVG-rendered Fraction Bars (UMass Dartmouth / TIMA lineage).",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test \"test/**/*.test.mjs\""
+  }
+}

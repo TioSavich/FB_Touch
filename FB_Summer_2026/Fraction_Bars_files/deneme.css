@@ -1,0 +1,70 @@
+fieldset {
+  border: 2px #aa3333 ;
+  border-radius: 10px;
+}
+
+/* Editable [pseudo]select (i.e. fieldsets with [class=elist]) */
+
+fieldset.elist {
+  display: block;
+  position: relative;
+  vertical-align: bottom;
+  overflow: visible;
+    width: 200px;
+  padding: 0;
+  margin: 0;
+  border: none;
+}
+
+fieldset.elist ul {
+  position: absolute;
+  width: 100%;
+  max-height: 320px;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  background-color: #ffffff;
+}
+
+fieldset.elist:hover ul {
+  background-color: #ffffff;
+  border: 2px #aaaaaa solid;
+  left: 2px;
+  overflow: auto;
+}
+
+fieldset.elist ul > li {
+  list-style-type: none;
+  background-color: transparent;
+}
+
+fieldset.elist label {
+  display: none;
+  width: 100%;
+}
+
+fieldset.elist ul input[type="radio"] {
+  display: none;
+  
+}
+
+fieldset.elist input[type="radio"]:checked ~ label {
+  display: block;
+  width: 292px;
+  background-color: #ffffff;
+
+}
+
+fieldset.elist input[type="radio"]:checked ~ label:after {
+  content: " \2335";
+}
+
+fieldset.elist:hover label {
+  display: block;
+  height: 100%;
+}
+
+
+fieldset.elist:hover input[type="radio"]:checked ~ label {
+  background-color: #aaaaaa;
+}
