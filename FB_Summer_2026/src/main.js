@@ -133,6 +133,8 @@ FB.Main.boot = function (doc, win) {
 			ui.clearAll = actions.clearAll; ui.showAll = actions.showAll;
 			ui.previous = actions.previous; ui.next = actions.next;
 			ui.hideButton = actions.hideButton;
+			ui.onHideMode = actions.setHideMode;
+			ui.onHideChanged = actions.updateHideUi;
 			ui.setToolSelected = actions.setToolSelected;
 			ui.setColorSelected = actions.setColorSelected;
 		}
@@ -155,6 +157,52 @@ FB.Main.boot = function (doc, win) {
 	// ----- Pointer input -----------------------------------------------------
 	if (FB.Pointer && svgRoot && typeof FB.Pointer.attach === 'function') {
 		FB.Pointer.attach(svgRoot, controller, {});
+	}
+
+	// ----- Theme / skin picker -----------------------------------------------
+	// A skin is a data-theme attribute on <html>; all chrome + canvas colors are
+	// CSS custom properties that cascade from it (see app.css). Persisted in
+	// localStorage. After a swap we refresh so the renderer re-reads the themed
+	// --fb-ink / --fb-split-stroke / --fb-guide / --fb-label-halo off the canvas.
+	(function () {
+		var sel = doc.getElementById('fb-theme');
+		var root = doc.documentElement;
+		function applyTheme(name) {
+			if (name) { root.setAttribute('data-theme', name); }
+			else { root.removeAttribute('data-theme'); }
+			// Repaint the quick swatches to the theme's palette, then re-render so
+			// the canvas re-reads themed --fb-ink / strokes / halo.
+			if (FB.Swatches && typeof FB.Swatches.apply === 'function') {
+				FB.Swatches.apply(doc, name || '', controller);
+			}
+			controller.refresh();
+		}
+		var saved = '';
+		try { saved = (win && win.localStorage && win.localStorage.getItem('fb-theme')) || ''; } catch (e) { /* ignore */ }
+		if (sel) {
+			if (saved) { sel.value = saved; }
+			applyTheme(sel.value);
+			sel.addEventListener('change', function () {
+				var v = sel.value;
+				try { if (win && win.localStorage) { win.localStorage.setItem('fb-theme', v); } } catch (e) { /* ignore */ }
+				applyTheme(v);
+			});
+		} else if (saved) {
+			applyTheme(saved);
+		}
+	})();
+
+	// "Done hiding" button leaves hide mode exactly like tapping Hide Tools again.
+	var hideDone = doc.getElementById('fb-hide-done');
+	if (hideDone && FB.Toolbar && typeof FB.Toolbar.dispatch === 'function') {
+		hideDone.addEventListener('click', function () {
+			FB.Toolbar.dispatch(controller, 'tool_hide', {});
+		});
+	}
+
+	// Draggable, docked-left toolbar panel (position persisted to localStorage).
+	if (FB.ToolbarDrag && typeof FB.ToolbarDrag.install === 'function') {
+		FB.ToolbarDrag.install(doc, win);
 	}
 
 	// ----- Keyboard shortcuts (ports fractionbars.js keydown/keyup) ----------
@@ -229,6 +277,7 @@ FB.Main.boot = function (doc, win) {
 
 	// Initial label/i18n/paint.
 	applyI18n();
+	if (actions && typeof actions.updateHideUi === 'function') { actions.updateHideUi(); }
 	controller.refresh();
 
 	var app = {

@@ -39,8 +39,9 @@ FB.I18N = FB.I18N || {};
 		'new': 'New',
 		print: 'Print',
 		properties: 'Properties',
-		hide: 'Hide',
-		show: 'Show',
+		hide: 'Hide Tools',
+		show: 'Show All',
+		hide_done: 'Done hiding',
 		previous: 'Previous',
 		next: 'Next',
 

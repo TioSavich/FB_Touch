@@ -200,17 +200,20 @@ FB.AppActions.create = function (deps) {
 		var b = sel[0];
 		var input = doc.getElementById('labelInput');
 		if (!input) { return; }
-		// Map model coords -> client pixels. viewBox is 0..1000 x 0..700 and the
-		// canvas keeps that aspect ratio (no letterboxing), so the scale is uniform.
+		// Map model coords -> client pixels. The canvas fills the stage and
+		// letterboxes a 1000x700 viewBox (preserveAspectRatio="xMidYMid meet"),
+		// so the content scale is the smaller axis ratio and the drawing is
+		// centered -- account for both the uniform scale and the letterbox offset.
 		var rect = svgRoot.getBoundingClientRect
 			? svgRoot.getBoundingClientRect()
 			: { left: 0, top: 0, width: 1000, height: 700 };
-		var sx = rect.width / 1000;
-		var sy = rect.height / 700;
+		var scale = Math.min(rect.width / 1000, rect.height / 700) || 1;
+		var offX = (rect.width - 1000 * scale) / 2;
+		var offY = (rect.height - 700 * scale) / 2;
 		input.style.position = 'fixed';
-		input.style.left = (rect.left + (b.x + 5) * sx) + 'px';
-		input.style.top = (rect.top + (b.y + b.h - 22) * sy) + 'px';
-		input.style.width = Math.max(40, (b.w - 13) * sx) + 'px';
+		input.style.left = (rect.left + offX + (b.x + 5) * scale) + 'px';
+		input.style.top = (rect.top + offY + (b.y + b.h - 22) * scale) + 'px';
+		input.style.width = Math.max(40, (b.w - 13) * scale) + 'px';
 		input.value = b.label || '';
 		input.classList.add('is-editing');
 		input.style.display = 'inline-block';
@@ -228,6 +231,37 @@ FB.AppActions.create = function (deps) {
 				hiddenEls.push(el);
 			}
 		}
+		updateHideUi();
+	}
+
+	// Reflect the hidden-tool count into the Show All button + the banner so the
+	// (otherwise invisible, "locked") hide state is always legible.
+	function updateHideUi() {
+		var n = hiddenEls.length;
+		var show = doc.getElementById('action_show');
+		if (show) {
+			show.classList.toggle('is-disabled', n === 0);
+			show.setAttribute('aria-disabled', n === 0 ? 'true' : 'false');
+			show.textContent = n > 0 ? (t('show') + ' (' + n + ')') : t('show');
+		}
+		var count = doc.getElementById('fb-hide-count');
+		if (count) {
+			count.textContent = n > 0
+				? (' ' + n + (n === 1 ? ' tool hidden.' : ' tools hidden.'))
+				: '';
+		}
+	}
+
+	// Enter / leave hide mode: toggle the body affordance class, show the banner,
+	// and swap the Hide control's label to "Done hiding" so it clearly reads as a
+	// toggle the user must turn back off.
+	function setHideMode(active) {
+		if (doc.body) { doc.body.classList.toggle('fb-hide-active', !!active); }
+		var banner = doc.getElementById('fb-hide-banner');
+		if (banner) { banner.toggleAttribute('hidden', !active); }
+		var hideBtn = doc.getElementById('tool_hide');
+		if (hideBtn) { hideBtn.textContent = active ? t('hide_done') : t('hide'); }
+		updateHideUi();
 	}
 
 	function showAll() {
@@ -236,6 +270,7 @@ FB.AppActions.create = function (deps) {
 			el.removeAttribute('hidden');
 		}
 		FB.hiddenButtonNames.length = 0;
+		updateHideUi();
 	}
 
 	function applyHidden(names) {
@@ -279,6 +314,8 @@ FB.AppActions.create = function (deps) {
 		editLabel: editLabel,
 		hideLabel: hideLabel,
 		hideButton: hideButton,
+		setHideMode: setHideMode,
+		updateHideUi: updateHideUi,
 		showAll: showAll,
 		applyState: applyStateObject,
 		setToolSelected: setToolSelected,

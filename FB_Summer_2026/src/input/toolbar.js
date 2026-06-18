@@ -40,6 +40,8 @@ FB.Toolbar.ui = {
 	previous: null,         // action_previous
 	next: null,             // action_next
 	hideButton: null,       // hide mode: hide the clicked element (id)
+	onHideMode: null,       // hide mode entered/exited (active:boolean)
+	onHideChanged: null,    // a tool was hidden / shown (refresh banner + Show All)
 	setToolSelected: null,  // mark a tool element selected (id, on)
 	setColorSelected: null  // mark a color swatch selected
 };
@@ -58,6 +60,7 @@ FB.Toolbar.dispatch = function (controller, id, opts) {
 	// $(this).hide(); hiddenButtonsName.push(thisId).)
 	if (state.currentAction === 'hide' && id.indexOf('hide') === -1) {
 		if (ui.hideButton) { ui.hideButton(id); }
+		if (ui.onHideChanged) { ui.onHideChanged(); }
 		return true;
 	}
 
@@ -74,6 +77,7 @@ FB.Toolbar.dispatch = function (controller, id, opts) {
 			if (ui.setToolSelected) { ui.setToolSelected(id, true); }
 		}
 		controller.handleToolUpdate(toolName, tool_on);
+		if (toolName === 'hide' && ui.onHideMode) { ui.onHideMode(tool_on); }
 		controller.refresh();
 		return true;
 	}

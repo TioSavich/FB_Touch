@@ -1,6 +1,7 @@
 {
   "scripts": [
     "src/model/_namespace.js",
+    "src/api/hooks.js",
     "src/model/Point.js",
     "src/model/Line.js",
     "src/model/Split.js",
@@ -20,6 +21,8 @@
     "src/chrome/dialogs.js",
     "src/chrome/appActions.js",
     "src/chrome/galleryUi.js",
+    "src/chrome/swatches.js",
+    "src/chrome/toolbarDrag.js",
     "src/i18n/strings.js",
     "src/api/stateApi.js",
     "src/main.js"

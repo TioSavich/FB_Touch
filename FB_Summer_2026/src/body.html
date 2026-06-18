@@ -1,11 +1,38 @@
-<h1 class="bar_title" id="bar_titles">Fraction Bars</h1>
-
 <div id="fb-app" class="fb-app">
 
+  <!-- Header: title + skin picker -->
+  <div class="fb-header">
+    <h1 class="bar_title" id="bar_titles">Fraction Bars</h1>
+    <div class="fb-header-tools">
+      <label class="fb-theme-label" for="fb-theme">Theme</label>
+      <select id="fb-theme" class="fb-theme-select" aria-label="Color theme">
+        <option value="">Classic</option>
+        <option value="hermes">Hermes · Parchment</option>
+        <option value="iu">Crimson · Academic</option>
+        <option value="chalk">Chalkboard</option>
+        <option value="candy">Bubblegum</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Hide-mode banner: full-width, above the workspace, makes the "locked" hide mode obvious. -->
+  <div id="fb-hide-banner" class="fb-hide-banner" role="status" aria-live="polite" hidden>
+    <span class="fb-hide-banner-text" id="fb-hide-banner-text"><strong>Hide mode on.</strong> Tap any tool button to hide it from learners.<span id="fb-hide-count"></span></span>
+    <button type="button" id="fb-hide-done" class="fb-hide-done">Done hiding</button>
+  </div>
+
+  <div class="fb-workspace">
+
   <!-- ===================================================================== -->
-  <!-- Toolbar (ported group order + label wording from the original) -->
+  <!-- Toolbar: a compact, draggable, docked-left panel -->
   <!-- ===================================================================== -->
   <div id="fb-toolbar" class="fb-toolbar" role="toolbar" aria-label="Fraction Bars tools">
+
+    <div class="fb-toolbar-handle" id="fb-toolbar-handle" title="Drag to move the toolbar">
+      <span class="fb-toolbar-grip" aria-hidden="true"></span>
+      <span class="fb-toolbar-handle-label">Tools</span>
+      <button type="button" id="fb-toolbar-dock" class="fb-toolbar-dock" title="Reset toolbar position" aria-label="Reset toolbar position">⤢</button>
+    </div>
 
     <div class="toolGroup">
       <a class="toolBtn" id="tool_bar" data-i18n="bar" role="button" tabindex="0">Bar</a>
@@ -64,14 +91,15 @@
     </div>
 
     <div class="toolGroup">
-      <a class="toolBtn hideShow" id="tool_hide" data-i18n="hide" role="button" tabindex="0">Hide</a>
-      <a class="toolBtn hideShow" id="action_show" data-i18n="show" role="button" tabindex="0">Show</a>
+      <a class="toolBtn hideShow" id="tool_hide" data-i18n="hide" role="button" tabindex="0">Hide Tools</a>
+      <a class="toolBtn hideShow" id="action_show" data-i18n="show" role="button" tabindex="0">Show All</a>
     </div>
 
     <div class="toolGroup">
       <a class="toolBtn" id="fb-add-to-selection" role="button" tabindex="0" aria-pressed="false">Add to Selection</a>
     </div>
   </div>
+  <!-- /toolbar -->
 
   <!-- ===================================================================== -->
   <!-- Canvas + overlays -->
@@ -83,9 +111,11 @@
          xmlns="http://www.w3.org/2000/svg"></svg>
 
     <input name="labelField" id="labelInput" class="fb-label-input" type="text" value="" autocomplete="off">
+
+    <div id="fb-gallery" class="fb-gallery" hidden></div>
   </div>
 
-  <div id="fb-gallery" class="fb-gallery" hidden></div>
+  </div><!-- /fb-workspace -->
 
   <!-- Flags carried over from the original hidden #flags block. -->
   <div hidden id="flags">

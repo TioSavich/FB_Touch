@@ -2,117 +2,425 @@
 <html lang="en"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-NfYqIhmjkQVC6gJ0SqOsQ1TiXx58VTKyBtgXg8gg6Bg='; style-src 'sha256-URKrCPqNheg+amM5mo600Z/mQl7b4xEBqdOmDCE8mBw='; img-src data: blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-SnwxsRSwZJdxNGqVuoqmjCEQwjSinwmgGWDQG/w5+wI='; style-src 'sha256-LPyueneOow8BQAqZ9Hi5qcZZoE6cFYXxZgmLVc2MCQQ='; img-src data: blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>Fraction Bars</title>
 <style>/* FB_Summer_2026/src/styles/app.css
  *
- * Reproduces the original Fraction Bars look (fractionBars.css): Helvetica text,
- * light-gray canvas (#EFEFEF) with a gray grooved border, and the exact .colorN
- * swatch hex values. Adds a responsive layout (side rail >= 900px, wrapping
- * toolbar below) and >= 44px touch targets.
+ * Skinnable, full-viewport Fraction Bars chrome.
+ *
+ * THEME SYSTEM ----------------------------------------------------------------
+ * Every chrome color / font / radius is a CSS custom property declared on
+ * :root with the ORIGINAL drab values as defaults (white bordered buttons,
+ * Helvetica, #EFEFEF grooved canvas). A skin is just an override block keyed on
+ * html[data-theme="…"]; the theme picker toggles that attribute. The SVG
+ * renderer reads --fb-ink / --fb-split-stroke / --fb-guide / --fb-label-halo /
+ * --fb-canvas-font off the canvas via getComputedStyle, so the canvas marks
+ * re-skin too -- all CSP-safe (no inline styles, no eval), all in one hashed
+ * stylesheet. No external fonts (sealed/offline): skins use system stacks.
+ *
+ * LAYOUT ----------------------------------------------------------------------
+ * .fb-app is a full-height flex column: header / toolbar / (hide banner) /
+ * stage. The stage takes the remaining height and the SVG fits inside it
+ * (preserveAspectRatio="meet"), so nothing ever scrolls to reach a tool.
  */
 
-:root { color-scheme: light; }
+:root {
+	color-scheme: light;
 
-/* ---- Base typography (ported from fractionBars.css) ---------------------- */
+	/* shell */
+	--fb-bg: #ffffff;
+	--fb-bg-image: none;
+	--fb-fg: #000000;
+	--fb-font-ui: Helvetica, Arial, sans-serif;
+	--fb-font-head: Helvetica, Arial, sans-serif;
+	--fb-title-size: 19px;
+	--fb-title-weight: 700;
+	--fb-title-tracking: normal;
+	--fb-title-transform: none;
+	--fb-divider: rgba(0, 0, 0, 0.16);
+
+	/* buttons */
+	--fb-btn-bg: #ffffff;
+	--fb-btn-fg: #000000;
+	--fb-btn-border: #999999;
+	--fb-btn-hover-bg: #f4f4f4;
+	--fb-btn-active-bg: #eeeeee;
+	--fb-btn-active-border: #000000;
+	--fb-btn-active-fg: #000000;
+	--fb-btn-radius: 0px;
+
+	/* accents */
+	--fb-accent: #2a64d6;
+	--fb-accent-fg: #ffffff;
+
+	/* canvas + canvas marks (read by the SVG renderer) */
+	--fb-canvas-bg: #efefef;
+	--fb-canvas-border-color: #808080;
+	--fb-canvas-border-style: groove;
+	--fb-canvas-radius: 0px;
+	--fb-stage-bg: transparent;
+	--fb-ink: #000000;
+	--fb-split-stroke: #ff0000;
+	--fb-guide: #ff0000;
+	--fb-label-halo: rgba(255, 255, 255, 0.72);
+	--fb-canvas-font: Helvetica, Arial, sans-serif;
+
+	/* panels (gallery + dialogs) */
+	--fb-panel-bg: #fafafa;
+	--fb-panel-border: #808080;
+}
+
+/* ======================================================================== */
+/* SKINS                                                                     */
+/* ======================================================================== */
+
+/* Parchment / gold -- "Hermes" hermeneutic-calculator lineage. */
+html[data-theme="hermes"] {
+	--fb-bg: #e7d9bb;
+	--fb-bg-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.16 0 0 0 0 0.13 0 0 0 0 0.08 0 0 0 0.05 0'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");
+	--fb-fg: #2a2418;
+	--fb-font-ui: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+	--fb-font-head: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+	--fb-title-tracking: 0.005em;
+	--fb-divider: rgba(42, 36, 24, 0.22);
+	--fb-btn-bg: #f4ead6;
+	--fb-btn-fg: #2a2418;
+	--fb-btn-border: #b78930;
+	--fb-btn-hover-bg: #efe1bf;
+	--fb-btn-active-bg: #d4a747;
+	--fb-btn-active-border: #2a2418;
+	--fb-btn-active-fg: #2a2418;
+	--fb-btn-radius: 6px;
+	--fb-accent: #b78930;
+	--fb-accent-fg: #2a2418;
+	--fb-canvas-bg: #f4ead6;
+	--fb-canvas-border-color: #b78930;
+	--fb-canvas-border-style: solid;
+	--fb-canvas-radius: 8px;
+	--fb-ink: #2a2418;
+	--fb-split-stroke: #c45a3e;
+	--fb-guide: #c45a3e;
+	--fb-label-halo: rgba(244, 234, 214, 0.84);
+	--fb-canvas-font: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+	--fb-panel-bg: #f4ead6;
+	--fb-panel-border: #b78930;
+}
+
+/* Crimson academic worksheet -- "IU math-ed" lineage. Cream + crimson, not brown:
+ * pale cream surfaces, warm-but-neutral lines (no olive/tan), crimson accents. */
+html[data-theme="iu"] {
+	--fb-bg: #f1e8d4;
+	--fb-bg-image: none;
+	--fb-fg: #2a1c1c;
+	--fb-font-ui: Georgia, "Times New Roman", serif;
+	--fb-font-head: Georgia, "Times New Roman", serif;
+	--fb-title-tracking: -0.01em;
+	--fb-divider: rgba(153, 0, 0, 0.2);
+	--fb-btn-bg: #fffdf7;
+	--fb-btn-fg: #2a1c1c;
+	--fb-btn-border: #d8c2bd;
+	--fb-btn-hover-bg: #fbeeee;
+	--fb-btn-active-bg: #990000;
+	--fb-btn-active-border: #7a0000;
+	--fb-btn-active-fg: #ffffff;
+	--fb-btn-radius: 2px;
+	--fb-accent: #990000;
+	--fb-accent-fg: #ffffff;
+	--fb-canvas-bg: #fffdf7;
+	--fb-canvas-border-color: #d8c2bd;
+	--fb-canvas-border-style: solid;
+	--fb-canvas-radius: 3px;
+	--fb-ink: #2a1c1c;
+	--fb-split-stroke: #990000;
+	--fb-guide: #990000;
+	--fb-label-halo: rgba(255, 253, 247, 0.9);
+	--fb-canvas-font: Georgia, "Times New Roman", serif;
+	--fb-panel-bg: #fffdf7;
+	--fb-panel-border: #d8c2bd;
+}
+/* IU crimson title accent. */
+html[data-theme="iu"] h1.bar_title { color: #990000; }
+
+/* Chalkboard -- playful dark slate with chalk marks. */
+html[data-theme="chalk"] {
+	--fb-bg: #1f302b;
+	--fb-bg-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 0.95 0 0 0 0.04 0'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");
+	--fb-fg: #f3efe6;
+	--fb-font-ui: "Chalkboard SE", "Comic Sans MS", "Segoe Print", "Bradley Hand", cursive;
+	--fb-font-head: "Chalkboard SE", "Comic Sans MS", "Segoe Print", cursive;
+	--fb-divider: rgba(243, 239, 230, 0.22);
+	--fb-btn-bg: #2c403a;
+	--fb-btn-fg: #f3efe6;
+	--fb-btn-border: #5e7a6f;
+	--fb-btn-hover-bg: #38504a;
+	--fb-btn-active-bg: #f6d04d;
+	--fb-btn-active-border: #f6d04d;
+	--fb-btn-active-fg: #1f302b;
+	--fb-btn-radius: 11px;
+	--fb-accent: #f6d04d;
+	--fb-accent-fg: #1f302b;
+	--fb-canvas-bg: #243530;
+	--fb-canvas-border-color: #0c1512;
+	--fb-canvas-border-style: solid;
+	--fb-canvas-radius: 7px;
+	--fb-ink: #f3efe6;
+	--fb-split-stroke: #f6d04d;
+	--fb-guide: #ff9a7a;
+	--fb-label-halo: rgba(16, 26, 22, 0.5);
+	--fb-canvas-font: "Chalkboard SE", "Comic Sans MS", cursive;
+	--fb-panel-bg: #2c403a;
+	--fb-panel-border: #5e7a6f;
+}
+
+/* Bubblegum -- playful bright candy palette with pill buttons. */
+html[data-theme="candy"] {
+	--fb-bg: #fff0f6;
+	--fb-bg-image: none;
+	--fb-fg: #5a2a4a;
+	--fb-font-ui: "Trebuchet MS", "Segoe UI", Verdana, sans-serif;
+	--fb-font-head: "Trebuchet MS", "Segoe UI", sans-serif;
+	--fb-divider: rgba(90, 42, 74, 0.16);
+	--fb-btn-bg: #ffffff;
+	--fb-btn-fg: #5a2a4a;
+	--fb-btn-border: #ff8fc4;
+	--fb-btn-hover-bg: #ffe3f0;
+	--fb-btn-active-bg: #ff5ca8;
+	--fb-btn-active-border: #e23d8a;
+	--fb-btn-active-fg: #ffffff;
+	--fb-btn-radius: 18px;
+	--fb-accent: #ff5ca8;
+	--fb-accent-fg: #ffffff;
+	--fb-canvas-bg: #fffafd;
+	--fb-canvas-border-color: #ff8fc4;
+	--fb-canvas-border-style: solid;
+	--fb-canvas-radius: 18px;
+	--fb-ink: #5a2a4a;
+	--fb-split-stroke: #7a5cff;
+	--fb-guide: #ff5ca8;
+	--fb-label-halo: rgba(255, 255, 255, 0.86);
+	--fb-canvas-font: "Trebuchet MS", "Segoe UI", sans-serif;
+	--fb-panel-bg: #fffafd;
+	--fb-panel-border: #ff8fc4;
+}
+
+/* ======================================================================== */
+/* BASE                                                                      */
+/* ======================================================================== */
 html, body {
 	margin: 0;
 	padding: 0;
+	height: 100%;
 }
 body, p, td {
-	font-family: Helvetica, Arial, sans-serif;
+	font-family: var(--fb-font-ui);
 	font-size: 12px;
+	color: var(--fb-fg);
 }
-a {
-	cursor: pointer;
+body {
+	background: var(--fb-bg);
+	overflow: hidden; /* the stage fits; the page itself never scrolls */
 }
+a { cursor: pointer; }
+[hidden] { display: none !important; }
 
 h1.bar_title {
-	font-family: Helvetica, Arial, sans-serif;
-	font-size: 20px;
-	font-weight: bold;
-	margin: 8px 12px;
+	font-family: var(--fb-font-head);
+	font-size: var(--fb-title-size);
+	font-weight: var(--fb-title-weight);
+	letter-spacing: var(--fb-title-tracking);
+	text-transform: var(--fb-title-transform);
+	margin: 0;
+	color: var(--fb-fg);
 }
 
-/* ---- App shell ----------------------------------------------------------- */
+/* ---- App shell: full-viewport flex column ------------------------------- */
 .fb-app {
 	display: flex;
 	flex-direction: column;
-	gap: 12px;
-	padding: 8px 12px 16px;
+	gap: 8px;
+	height: 100dvh;
+	padding: 8px 12px 10px;
 	box-sizing: border-box;
+	background: var(--fb-bg);
+	background-image: var(--fb-bg-image);
+	background-attachment: fixed;
 }
 
-/* ---- Toolbar ------------------------------------------------------------- */
-.fb-toolbar {
+/* ---- Header (title + theme picker) -------------------------------------- */
+.fb-header {
+	flex: none;
 	display: flex;
-	flex-wrap: wrap;
-	align-items: flex-start;
-	gap: 12px;
+	align-items: center;
+	gap: 16px;
 }
+.fb-header-tools {
+	margin-left: auto;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.fb-theme-label {
+	font-family: var(--fb-font-ui);
+	font-size: 10px;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	opacity: 0.7;
+}
+.fb-theme-select {
+	font-family: var(--fb-font-ui);
+	font-size: 12px;
+	color: var(--fb-btn-fg);
+	background: var(--fb-btn-bg);
+	border: 1px solid var(--fb-btn-border);
+	border-radius: var(--fb-btn-radius);
+	min-height: 32px;
+	padding: 2px 8px;
+	cursor: pointer;
+}
+
+/* ---- Workspace: stage fills it; the toolbar floats over it ---------------- */
+.fb-workspace {
+	position: relative;
+	flex: 1 1 auto;
+	min-height: 0;
+}
+
+/* ---- Toolbar: a compact, draggable, docked-left panel -------------------- */
+.fb-toolbar {
+	position: absolute;
+	left: 10px;
+	top: 10px;
+	z-index: 7;
+	width: 184px;
+	max-height: calc(100% - 20px);
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding: 6px;
+	box-sizing: border-box;
+	background: var(--fb-panel-bg);
+	border: 1px solid var(--fb-panel-border);
+	border-radius: max(7px, var(--fb-btn-radius));
+	box-shadow: 0 8px 26px -10px rgba(0, 0, 0, 0.45);
+	overflow: auto;
+	touch-action: none;
+}
+
+/* Drag handle = themed title bar pinned to the top of the panel. */
+.fb-toolbar-handle {
+	position: sticky;
+	top: -6px;
+	z-index: 2;
+	margin: -6px -6px 3px;
+	padding: 6px 8px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	background: var(--fb-btn-active-bg);
+	color: var(--fb-btn-active-fg);
+	border-radius: max(7px, var(--fb-btn-radius)) max(7px, var(--fb-btn-radius)) 0 0;
+	cursor: grab;
+	user-select: none;
+	-webkit-user-select: none;
+	touch-action: none;
+	font-family: var(--fb-font-ui);
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+}
+.fb-toolbar.is-dragging .fb-toolbar-handle,
+.fb-toolbar-handle:active { cursor: grabbing; }
+.fb-toolbar-grip {
+	width: 14px;
+	height: 12px;
+	flex: none;
+	background-image: radial-gradient(currentColor 1.1px, transparent 1.2px);
+	background-size: 4px 4px;
+	opacity: 0.65;
+}
+.fb-toolbar-handle-label { flex: 1 1 auto; }
+.fb-toolbar-dock {
+	flex: none;
+	background: transparent;
+	border: none;
+	color: inherit;
+	cursor: pointer;
+	font-size: 13px;
+	line-height: 1;
+	padding: 2px 3px;
+	opacity: 0.75;
+}
+.fb-toolbar-dock:hover { opacity: 1; }
 
 .fb-toolbar .toolGroup {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 4px;
-	margin-bottom: 12px;
+	gap: 3px;
 	align-content: flex-start;
+	padding-bottom: 4px;
+	border-bottom: 1px solid var(--fb-divider);
 }
+.fb-toolbar .toolGroup:last-child { border-bottom: none; padding-bottom: 0; }
 
-/* Tool buttons: original bordered block look, upsized to a 44px touch target. */
 .fb-toolbar .toolBtn {
-	border: 1px solid #999999;
+	flex: 1 1 auto;
+	border: 1px solid var(--fb-btn-border);
+	border-radius: var(--fb-btn-radius);
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	box-sizing: border-box;
-	min-width: 80px;
-	min-height: 44px;
-	padding: 2px 6px;
+	min-height: 25px;
+	padding: 2px 7px;
 	margin: 0;
 	text-align: center;
-	background: #ffffff;
+	white-space: nowrap;
+	background: var(--fb-btn-bg);
+	color: var(--fb-btn-fg);
+	font-family: var(--fb-font-ui);
+	font-size: 11px;
 	user-select: none;
 	-webkit-user-select: none;
-	/* Prevent the iOS double-tap-to-zoom delay/zoom on controls. */
 	touch-action: manipulation;
 	-webkit-tap-highlight-color: transparent;
 }
-.fb-btn, .colorBlock, .colorBlock1 { touch-action: manipulation; }
-.fb-toolbar .toolBtn:hover {
-	background-color: #f4f4f4;
-}
-.fb-toolbar .toolBtn.hideShow {
-	min-width: 44px;
-}
+.fb-btn, .colorBlock, .colorBlock1, .fb-theme-select { touch-action: manipulation; }
+.fb-toolbar .toolBtn:hover { background-color: var(--fb-btn-hover-bg); }
 
-/* Selected tool (ported a.toolSelected). */
 .fb-toolbar .toolBtn.toolSelected,
 .fb-toolbar .toolBtn[aria-pressed="true"] {
-	border: 1px solid black;
-	background-color: #EEEEEE;
+	border: 1px solid var(--fb-btn-active-border);
+	background-color: var(--fb-btn-active-bg);
+	color: var(--fb-btn-active-fg);
 }
 
-[hidden] { display: none !important; }
-
-/* ---- Color swatches ------------------------------------------------------ */
-/* 8 quick swatches in the rail (original .colorBlock was 10x10; enlarged for
- * touch). The 16-color palette inside Properties keeps the original block size. */
-.swatchGroup {
-	gap: 6px;
+/* Touch devices: roomier targets (the panel scrolls if it gets tall). */
+@media (pointer: coarse) {
+	.fb-toolbar { width: 210px; }
+	.fb-toolbar .toolBtn { min-height: 38px; font-size: 12px; }
+	.fb-theme-select { min-height: 44px; }
 }
+
+/* ---- Color swatches ----------------------------------------------------- */
+.swatchGroup { gap: 5px; }
 .fb-toolbar .colorBlock {
-	border: 1px solid gray;
-	width: 44px;
-	height: 44px;
+	flex: 0 0 auto;
+	border: 1px solid var(--fb-btn-border);
+	border-radius: calc(var(--fb-btn-radius) * 0.5);
+	width: 27px;
+	height: 27px;
 	box-sizing: border-box;
 	display: inline-block;
-	margin: 2px;
+	margin: 0;
+}
+@media (pointer: coarse) {
+	.fb-toolbar .colorBlock { width: 34px; height: 34px; }
 }
 .colorBlock.colorSelected,
 .colorBlock1.colorSelected {
-	border: 1px solid black;
-	outline: 2px solid black;
+	border: 1px solid var(--fb-accent);
+	outline: 2px solid var(--fb-accent);
 }
 
 .fb-color-palette {
@@ -122,10 +430,7 @@ h1.bar_title {
 	max-width: 360px;
 	margin: 8px 0;
 }
-.fb-color-palette p {
-	flex-basis: 100%;
-	margin: 0 0 4px;
-}
+.fb-color-palette p { flex-basis: 100%; margin: 0 0 4px; }
 .colorBlock1 {
 	border: 1px solid gray;
 	width: 32px;
@@ -153,49 +458,101 @@ h1.bar_title {
 .color15 { background-color: #F56ED0; }
 .color16 { background-color: #FF8C8C; }
 
-/* ---- Canvas stage -------------------------------------------------------- */
-.fb-stage {
-	position: relative;
-	flex: 1 1 auto;
-	min-width: 0;
+/* ---- Hide-mode banner --------------------------------------------------- */
+.fb-hide-banner {
+	flex: none;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	background: var(--fb-accent);
+	color: var(--fb-accent-fg);
+	font-family: var(--fb-font-ui);
+	font-size: 13px;
+	line-height: 1.3;
+	padding: 8px 14px;
+	border-radius: var(--fb-btn-radius);
+}
+.fb-hide-banner-text { flex: 1 1 auto; }
+.fb-hide-banner-text strong { font-weight: 700; }
+.fb-hide-done {
+	flex: none;
+	font-family: var(--fb-font-ui);
+	font-size: 12px;
+	font-weight: 700;
+	color: var(--fb-accent);
+	background: var(--fb-accent-fg);
+	border: none;
+	border-radius: var(--fb-btn-radius);
+	min-height: 32px;
+	padding: 4px 14px;
+	cursor: pointer;
+}
+.fb-hide-done:hover { opacity: 0.9; }
+
+/* While in hide mode, every hidable tool advertises that a tap removes it. */
+body.fb-hide-active .fb-toolbar .toolBtn:not(.hideShow) { cursor: crosshair; }
+body.fb-hide-active .fb-toolbar .toolBtn:not(.hideShow):hover {
+	outline: 2px dashed var(--fb-accent);
+	outline-offset: 1px;
+}
+/* The Hide control itself reads as the active "mode" switch. */
+.fb-toolbar #tool_hide.toolSelected {
+	background: var(--fb-accent);
+	border-color: var(--fb-accent);
+	color: var(--fb-accent-fg);
+}
+/* Show All is dimmed + inert when nothing is hidden. */
+.fb-toolbar .toolBtn.is-disabled {
+	opacity: 0.4;
+	pointer-events: none;
 }
 
-/* Canvas: light-gray fill with gray grooved border (ported #fbCanvas). */
+/* ---- Canvas stage (fills the workspace; toolbar floats above it) --------- */
+.fb-stage {
+	position: absolute;
+	inset: 0;
+	background: var(--fb-stage-bg);
+}
 .fb-canvas {
 	display: block;
 	width: 100%;
-	height: auto;
-	aspect-ratio: 1000 / 700;
-	background-color: #EFEFEF;
-	border: 1px gray groove;
+	height: 100%;
+	background-color: var(--fb-canvas-bg);
+	border: 1px var(--fb-canvas-border-color) var(--fb-canvas-border-style);
+	border-radius: var(--fb-canvas-radius);
 	box-sizing: border-box;
-	touch-action: none; /* let the pointer layer own gestures */
+	touch-action: none;
 }
 
-/* Label overlay input (original #labelInput is hidden until editing). */
+/* Label overlay input. */
 .fb-label-input {
 	display: none;
 	position: absolute;
-	font-family: Helvetica, Arial, sans-serif;
+	font-family: var(--fb-font-ui);
 	font-size: 12px;
 	z-index: 5;
 }
-.fb-label-input.is-editing {
-	display: inline-block;
-}
+.fb-label-input.is-editing { display: inline-block; }
 
-/* Vertical/Horizontal radio toggles default hidden (the original used an inline
- * style; moved to a class so no inline style attribute is needed under CSP). The
- * Properties dialog reveals them via element.style.display (CSSOM, CSP-safe). */
 .fb-vh-toggle { display: none; }
 
-/* ---- Gallery ------------------------------------------------------------- */
+/* ---- Gallery (floating overlay panel) ----------------------------------- */
 .fb-gallery {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	z-index: 6;
 	display: block;
-	border: 1px gray groove;
-	background: #fafafa;
+	border: 1px solid var(--fb-panel-border);
+	border-radius: var(--fb-btn-radius);
+	background: var(--fb-panel-bg);
+	color: var(--fb-fg);
 	padding: 8px 12px;
-	max-width: 360px;
+	width: 300px;
+	max-width: calc(100% - 20px);
+	max-height: calc(100% - 20px);
+	overflow: auto;
+	box-shadow: 0 8px 28px -10px rgba(0, 0, 0, 0.45);
 }
 .fb-gallery-title { font-size: 14px; font-weight: bold; margin: 0 0 8px; }
 .fb-gallery-saverow { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
@@ -203,88 +560,63 @@ h1.bar_title {
 .fb-gallery-list { list-style: none; margin: 0; padding: 0; }
 .fb-gallery-item { display: flex; align-items: center; gap: 6px; padding: 4px 0; flex-wrap: wrap; }
 .fb-gallery-name { flex: 1 1 120px; }
-.fb-gallery-empty { color: #666; font-style: italic; }
+.fb-gallery-empty { color: var(--fb-fg); opacity: 0.6; font-style: italic; }
 .fb-btn-sm { min-height: 32px; min-width: 0; padding: 2px 8px; }
 
-/* ---- Native dialogs ------------------------------------------------------ */
+/* ---- Native dialogs ----------------------------------------------------- */
 .fb-dialog {
-	border: 1px gray groove;
-	border-radius: 4px;
+	border: 1px solid var(--fb-panel-border);
+	border-radius: max(4px, var(--fb-btn-radius));
 	padding: 0;
 	max-width: min(92vw, 480px);
-	font-family: Helvetica, Arial, sans-serif;
+	font-family: var(--fb-font-ui);
 	font-size: 12px;
+	color: var(--fb-fg);
+	background: var(--fb-panel-bg);
 }
-.fb-dialog::backdrop {
-	background: rgba(0, 0, 0, 0.35);
-}
-.fb-dialog-body {
-	padding: 16px;
-	margin: 0;
-}
+.fb-dialog::backdrop { background: rgba(0, 0, 0, 0.35); }
+.fb-dialog-body { padding: 16px; margin: 0; }
 .fb-dialog-title {
-	font-size: 14px;
+	font-family: var(--fb-font-head);
+	font-size: 15px;
 	font-weight: bold;
 	margin: 0 0 12px;
 }
-.fb-dialog label {
-	display: inline-block;
-	margin-right: 6px;
-}
+.fb-dialog label { display: inline-block; margin-right: 6px; }
 .fb-dialog input[type="text"] {
-	font-family: Helvetica, Arial, sans-serif;
+	font-family: var(--fb-font-ui);
 	min-height: 32px;
 	padding: 2px 4px;
 	box-sizing: border-box;
 }
-.fb-dialog input[type="radio"] {
-	width: 20px;
-	height: 20px;
-	vertical-align: middle;
-}
-.fb-slider {
-	width: 250px;
-	max-width: 100%;
-	height: 32px;
-}
+.fb-dialog input[type="radio"] { width: 20px; height: 20px; vertical-align: middle; }
+.fb-slider { width: 250px; max-width: 100%; height: 32px; accent-color: var(--fb-accent); }
 .fb-split-display {
-	background-color: #EFEFEF;
-	border: 1px gray groove;
+	background-color: var(--fb-canvas-bg);
+	border: 1px solid var(--fb-panel-border);
 	width: 100px;
 	height: 100px;
 }
-.fb-make-table {
-	display: inline-table;
-	margin: 8px 0;
-}
-.fb-make-table input {
-	width: 48px;
-}
-.fb-make-num {
-	border-bottom: solid 1px black;
-}
+.fb-make-table { display: inline-table; margin: 8px 0; }
+.fb-make-table input { width: 48px; }
+.fb-make-num { border-bottom: solid 1px var(--fb-fg); }
 
-.fb-dialog-buttons {
-	display: flex;
-	justify-content: flex-end;
-	gap: 8px;
-	margin-top: 16px;
-}
+.fb-dialog-buttons { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
 .fb-btn {
-	font-family: Helvetica, Arial, sans-serif;
+	font-family: var(--fb-font-ui);
 	font-size: 12px;
-	min-height: 44px;
+	min-height: 40px;
 	min-width: 64px;
 	padding: 4px 12px;
-	border: 1px solid #999999;
-	background: #ffffff;
+	border: 1px solid var(--fb-btn-border);
+	border-radius: var(--fb-btn-radius);
+	background: var(--fb-btn-bg);
+	color: var(--fb-btn-fg);
 	cursor: pointer;
 }
-.fb-btn:hover {
-	background-color: #f4f4f4;
-}
+.fb-btn:hover { background-color: var(--fb-btn-hover-bg); }
 
-/* ---- Toast (notify) ------------------------------------------------------ */
+/* ---- Toast -------------------------------------------------------------- */
 .fb-toast {
 	position: fixed;
 	left: 50%;
@@ -293,7 +625,7 @@ h1.bar_title {
 	max-width: 90vw;
 	background: #323232;
 	color: #ffffff;
-	font-family: Helvetica, Arial, sans-serif;
+	font-family: var(--fb-font-ui);
 	font-size: 13px;
 	padding: 10px 16px;
 	border-radius: 4px;
@@ -302,70 +634,65 @@ h1.bar_title {
 	transition: opacity 0.2s ease;
 	z-index: 1000;
 }
-.fb-toast.is-visible {
-	opacity: 1;
-}
+.fb-toast.is-visible { opacity: 1; }
 
-/* ---- Responsive layout --------------------------------------------------- */
-/* >= 900px: toolbar becomes a fixed-width side rail, canvas fills the rest. */
-@media (min-width: 900px) {
-	.fb-app {
-		display: grid;
-		grid-template-columns: 120px 1fr;
-		grid-template-areas:
-			"title  title"
-			"tools  stage"
-			"tools  gallery";
-		align-items: start;
-	}
-	h1.bar_title { grid-area: title; }
-	.fb-toolbar {
-		grid-area: tools;
-		flex-direction: column;
-		flex-wrap: nowrap;
-	}
-	.fb-toolbar .toolGroup {
-		flex-direction: column;
-		width: 100%;
-	}
-	.fb-toolbar .toolBtn {
-		width: 100%;
-	}
-	.swatchGroup {
-		flex-direction: row !important;
-		flex-wrap: wrap;
-	}
-	.fb-stage { grid-area: stage; }
-	.fb-gallery { grid-area: gallery; }
-}
-
-/* ---- Print (vector) ------------------------------------------------------ */
-/* Print only the canvas, as scalable vector SVG -- no chrome, no raster. */
+/* ---- Print (vector) ----------------------------------------------------- */
 @media print {
 	.fb-toolbar,
 	.fb-gallery,
 	.fb-label-input,
-	h1.bar_title,
+	.fb-header,
+	.fb-hide-banner,
 	.fb-toast { display: none !important; }
-	.fb-app { display: block; padding: 0; }
-	.fb-stage { width: 100%; }
+	.fb-app { display: block; padding: 0; height: auto; background: #fff; }
+	.fb-workspace { position: static; }
+	.fb-stage { position: static; width: 100%; height: auto; }
 	.fb-canvas {
 		width: 100%;
 		height: auto;
+		aspect-ratio: 1000 / 700;
 		border: 1px solid #000;
 		background-color: #ffffff;
+		border-radius: 0;
 	}
 }
 </style>
 </head><body>
-<h1 class="bar_title" id="bar_titles">Fraction Bars</h1>
-
 <div id="fb-app" class="fb-app">
 
+  <!-- Header: title + skin picker -->
+  <div class="fb-header">
+    <h1 class="bar_title" id="bar_titles">Fraction Bars</h1>
+    <div class="fb-header-tools">
+      <label class="fb-theme-label" for="fb-theme">Theme</label>
+      <select id="fb-theme" class="fb-theme-select" aria-label="Color theme">
+        <option value="">Classic</option>
+        <option value="hermes">Hermes · Parchment</option>
+        <option value="iu">Crimson · Academic</option>
+        <option value="chalk">Chalkboard</option>
+        <option value="candy">Bubblegum</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Hide-mode banner: full-width, above the workspace, makes the "locked" hide mode obvious. -->
+  <div id="fb-hide-banner" class="fb-hide-banner" role="status" aria-live="polite" hidden>
+    <span class="fb-hide-banner-text" id="fb-hide-banner-text"><strong>Hide mode on.</strong> Tap any tool button to hide it from learners.<span id="fb-hide-count"></span></span>
+    <button type="button" id="fb-hide-done" class="fb-hide-done">Done hiding</button>
+  </div>
+
+  <div class="fb-workspace">
+
   <!-- ===================================================================== -->
-  <!-- Toolbar (ported group order + label wording from the original) -->
+  <!-- Toolbar: a compact, draggable, docked-left panel -->
   <!-- ===================================================================== -->
   <div id="fb-toolbar" class="fb-toolbar" role="toolbar" aria-label="Fraction Bars tools">
+
+    <div class="fb-toolbar-handle" id="fb-toolbar-handle" title="Drag to move the toolbar">
+      <span class="fb-toolbar-grip" aria-hidden="true"></span>
+      <span class="fb-toolbar-handle-label">Tools</span>
+      <button type="button" id="fb-toolbar-dock" class="fb-toolbar-dock" title="Reset toolbar position" aria-label="Reset toolbar position">⤢</button>
+    </div>
 
     <div class="toolGroup">
       <a class="toolBtn" id="tool_bar" data-i18n="bar" role="button" tabindex="0">Bar</a>
@@ -424,14 +751,15 @@ h1.bar_title {
     </div>
 
     <div class="toolGroup">
-      <a class="toolBtn hideShow" id="tool_hide" data-i18n="hide" role="button" tabindex="0">Hide</a>
-      <a class="toolBtn hideShow" id="action_show" data-i18n="show" role="button" tabindex="0">Show</a>
+      <a class="toolBtn hideShow" id="tool_hide" data-i18n="hide" role="button" tabindex="0">Hide Tools</a>
+      <a class="toolBtn hideShow" id="action_show" data-i18n="show" role="button" tabindex="0">Show All</a>
     </div>
 
     <div class="toolGroup">
       <a class="toolBtn" id="fb-add-to-selection" role="button" tabindex="0" aria-pressed="false">Add to Selection</a>
     </div>
   </div>
+  <!-- /toolbar -->
 
   <!-- ===================================================================== -->
   <!-- Canvas + overlays -->
@@ -443,9 +771,11 @@ h1.bar_title {
          xmlns="http://www.w3.org/2000/svg"></svg>
 
     <input name="labelField" id="labelInput" class="fb-label-input" type="text" value="" autocomplete="off">
+
+    <div id="fb-gallery" class="fb-gallery" hidden></div>
   </div>
 
-  <div id="fb-gallery" class="fb-gallery" hidden></div>
+  </div><!-- /fb-workspace -->
 
   <!-- Flags carried over from the original hidden #flags block. -->
   <div hidden id="flags">
@@ -632,6 +962,124 @@ h1.bar_title {
 </dialog>
 
 <script>var FB = (typeof window !== 'undefined' ? (window.FB = window.FB || {}) : (globalThis.FB = globalThis.FB || {}));
+
+// src/api/hooks.js
+//
+// Extension hooks for the Fraction Bars canvas. This is the seam that lets
+// future work bolt reasoning + reactive UI onto the manipulative WITHOUT
+// touching the sealed core or breaking the CSP (no eval, no network, no
+// innerHTML -- everything here is plain function registration + data export).
+//
+// Two audiences:
+//
+//   * PROLOG  -- a logic engine that wants the scene as facts it can query
+//     ("is this set of bars a valid partition of the unit?", "which bars are
+//     equivalent fractions?"). FB.Hooks.toProlog(scene) emits ground facts;
+//     FB.Hooks.toFacts(scene) returns the same as structured objects. Register
+//     FB.Hooks.on('render', cb) to recompute facts whenever the model changes.
+//
+//   * LIT (or any web-component / custom-element layer) -- reactive overlays
+//     drawn on top of the bars (handles, hints, annotations). Register with
+//     FB.Hooks.registerOverlay(fn); fn is called on every render with
+//     { svgRoot, scene, doc, ns } and should (re)draw its own <g> (the SVG tree
+//     is rebuilt each frame, so overlays are idempotent redraws, not one-time
+//     mounts). A Lit ReactiveController can mirror this: subscribe to 'render',
+//     read toFacts(scene), and update its host element positioned over .fb-stage.
+//
+// Nothing here is wired to a concrete engine yet -- it is the stable contract
+// those engines attach to.
+
+FB.Hooks = FB.Hooks || (function () {
+	var listeners = {};   // event name -> [fn]
+	var overlays = [];    // [fn({svgRoot,scene,doc,ns})]
+
+	function on(name, fn) {
+		if (typeof fn !== 'function') { return function () {}; }
+		(listeners[name] || (listeners[name] = [])).push(fn);
+		return function off() {
+			var a = listeners[name] || [];
+			var i = a.indexOf(fn);
+			if (i > -1) { a.splice(i, 1); }
+		};
+	}
+
+	function emit(name, payload) {
+		var a = listeners[name];
+		if (!a) { return; }
+		for (var i = 0; i < a.length; i++) {
+			try { a[i](payload); } catch (e) { /* a bad hook must never break the app */ }
+		}
+	}
+
+	function registerOverlay(fn) {
+		if (typeof fn !== 'function') { return function () {}; }
+		overlays.push(fn);
+		return function remove() {
+			var i = overlays.indexOf(fn);
+			if (i > -1) { overlays.splice(i, 1); }
+		};
+	}
+
+	function runOverlays(ctx) {
+		for (var i = 0; i < overlays.length; i++) {
+			try { overlays[i](ctx); } catch (e) { /* isolate overlay errors */ }
+		}
+	}
+
+	// ---- Prolog fact export --------------------------------------------------
+	// Quote an atom for Prolog: lowercase atoms pass bare, anything else is
+	// single-quoted with embedded quotes doubled.
+	function atom(s) {
+		s = String(s == null ? '' : s);
+		if (/^[a-z][a-zA-Z0-9_]*$/.test(s)) { return s; }
+		return "'" + s.replace(/\\/g, '\\\\').replace(/'/g, "\\'") + "'";
+	}
+	function num(n) { return String(Math.round(Number(n) || 0)); }
+	function int(n) { return Math.round(Number(n) || 0); }
+
+	function parseFrac(f) {
+		var m = /^(\d+)\/(\d+)$/.exec(String(f || '').trim());
+		return m ? { num: +m[1], den: +m[2] } : null;
+	}
+
+	// Structured facts (objects) -- convenient for JS consumers / Lit.
+	function toFacts(scene) {
+		scene = scene || {};
+		var bars = scene.bars || [];
+		var facts = [];
+		for (var i = 0; i < bars.length; i++) {
+			var b = bars[i];
+			var id = 'b' + i;
+			facts.push({ pred: 'bar', args: [id, int(b.x), int(b.y), int(b.w), int(b.h)] });
+			if (b.isUnitBar) { facts.push({ pred: 'unit_bar', args: [id] }); }
+			var fr = parseFrac(b.fraction);
+			if (fr) { facts.push({ pred: 'fraction', args: [id, fr.num, fr.den] }); }
+			if (b.label) { facts.push({ pred: 'label', args: [id, b.label] }); }
+			var splits = b.splits || [];
+			for (var s = 0; s < splits.length; s++) {
+				facts.push({ pred: 'part', args: [id, s, int(splits[s].x), int(splits[s].w)] });
+			}
+			if (splits.length) { facts.push({ pred: 'parts_count', args: [id, splits.length] }); }
+		}
+		return facts;
+	}
+
+	// Ground Prolog program text, one fact per line.
+	function toProlog(scene) {
+		return toFacts(scene).map(function (f) {
+			var args = f.args.map(function (a) {
+				return (typeof a === 'number') ? String(a) : atom(a);
+			});
+			return f.pred + '(' + args.join(', ') + ').';
+		}).join('\n');
+	}
+
+	return {
+		on: on, emit: emit,
+		registerOverlay: registerOverlay, runOverlays: runOverlays,
+		toFacts: toFacts, toProlog: toProlog
+	};
+})();
 
 // Copyright University of Massachusetts Dartmouth 2013
 //
@@ -1976,52 +2424,177 @@ FB.Gallery.create = function (adapter) {
 };
 
 // src/render/typeset.js
+//
+// Offline, CSP-safe fraction typesetter. No MathJax / KaTeX: loading either
+// would mean a CDN fetch (blocked by `connect-src 'none'`) or inlining ~1 MB of
+// third-party code that also uses `new Function` (blocked by the script-src
+// hash + the seal's no-eval rule). Instead we lay out fractions as native SVG
+// <text>/<line> with a deterministic Helvetica advance-width estimator -- the
+// same visual result (stacked numerator / rule / denominator, mixed numbers)
+// with zero network and zero dynamic code.
+//
+// The estimator understands LABELS that mix prose and fractions, so a learner
+// label like  "1 1/2 oranges"  typesets as  1½ (stacked)  +  " oranges", which
+// in TeX would be  $1 \frac{1}{2}$ oranges.  Each token is measured and placed
+// on a single baseline; the whole run can be anchored start / middle / end and
+// its measured width is exposed so the renderer can draw a readability halo.
+
 FB.Typeset = FB.Typeset || {};
 var SVGNS = 'http://www.w3.org/2000/svg';
 
-FB.Typeset.parseFraction = function (raw) {
-  var str = (raw === null || raw === undefined) ? '' : String(raw).trim();
-  if (str === '') return { kind:'text', text:'' };
-  var mixed = /^(\d+)\s+(\d+)\/(\d+)$/.exec(str);
-  if (mixed) return { kind:'mixed', whole:+mixed[1], num:+mixed[2], den:+mixed[3] };
-  var frac = /^(\d+)\/(\d+)$/.exec(str);
-  if (frac) return { kind:'fraction', num:+frac[1], den:+frac[2] };
-  var intgr = /^\d+$/.exec(str);
-  if (intgr) return { kind:'integer', whole:+str };
-  return { kind:'text', text:str };
+// --- advance-width estimate (Helvetica/Arial, em units) ---------------------
+// Good enough for placement without a DOM measure pass; keeps render
+// deterministic and free of layout thrash.
+FB.Typeset.charEm = function (ch) {
+	if (ch === ' ') { return 0.30; }
+	if ('iIl.,;:!|\'’`'.indexOf(ch) > -1) { return 0.26; }
+	if ('jftr()[]{}/\\'.indexOf(ch) > -1) { return 0.34; }
+	if ('mwMW'.indexOf(ch) > -1) { return 0.86; }
+	if (ch >= '0' && ch <= '9') { return 0.556; }
+	if (ch >= 'A' && ch <= 'Z') { return 0.68; }
+	return 0.52; // generic lowercase / punctuation
 };
 
+FB.Typeset.advance = function (str, fontSize) {
+	var s = (str === null || str === undefined) ? '' : String(str);
+	var w = 0;
+	for (var i = 0; i < s.length; i++) { w += FB.Typeset.charEm(s[i]); }
+	return w * fontSize;
+};
+
+// Back-compat: classify a single trimmed token.
+FB.Typeset.parseFraction = function (raw) {
+	var str = (raw === null || raw === undefined) ? '' : String(raw).trim();
+	if (str === '') { return { kind: 'text', text: '' }; }
+	var mixed = /^(\d+)\s+(\d+)\/(\d+)$/.exec(str);
+	if (mixed) { return { kind: 'mixed', whole: +mixed[1], num: +mixed[2], den: +mixed[3] }; }
+	var frac = /^(\d+)\/(\d+)$/.exec(str);
+	if (frac) { return { kind: 'fraction', num: +frac[1], den: +frac[2] }; }
+	var intgr = /^\d+$/.exec(str);
+	if (intgr) { return { kind: 'integer', whole: +str }; }
+	return { kind: 'text', text: str };
+};
+
+// Tokenize a full label into a left-to-right run of text + fraction atoms.
+// Finds mixed numbers ("1 1/2") and bare fractions ("3/4") anywhere inside
+// surrounding prose, leaving everything else as text tokens.
+FB.Typeset.tokenizeLabel = function (raw) {
+	var str = (raw === null || raw === undefined) ? '' : String(raw);
+	if (str === '') { return []; }
+	// mixed number  |  bare fraction. \b keeps us off the middle of "1234".
+	var re = /(\d+)\s+(\d+)\/(\d+)|(\d+)\/(\d+)/g;
+	var out = [];
+	var last = 0, m;
+	while ((m = re.exec(str)) !== null) {
+		if (m.index > last) { out.push({ type: 'text', text: str.slice(last, m.index) }); }
+		if (m[1] !== undefined) {
+			out.push({ type: 'frac', whole: +m[1], num: +m[2], den: +m[3] });
+		} else {
+			out.push({ type: 'frac', whole: null, num: +m[4], den: +m[5] });
+		}
+		last = re.lastIndex;
+	}
+	if (last < str.length) { out.push({ type: 'text', text: str.slice(last) }); }
+	return out;
+};
+
+// Measure the advance width of a single token run (no DOM).
+FB.Typeset.measureLabel = function (tokens, fontSize) {
+	var fsF = fontSize * 0.92;
+	var w = 0;
+	for (var i = 0; i < tokens.length; i++) {
+		var tk = tokens[i];
+		if (tk.type === 'text') {
+			w += FB.Typeset.advance(tk.text, fontSize);
+		} else {
+			if (tk.whole !== null && tk.whole !== undefined) {
+				w += FB.Typeset.advance(String(tk.whole), fontSize) + fontSize * 0.12;
+			}
+			var boxW = Math.max(
+				FB.Typeset.advance(String(tk.num), fsF),
+				FB.Typeset.advance(String(tk.den), fsF)
+			) + fsF * 0.30;
+			w += boxW + fontSize * 0.10;
+		}
+	}
+	return w;
+};
+
+// Build an SVG <g> for a label/fraction. Returns the <g>; the measured width is
+// attached as g.__fbWidth (and via getAttribute data-w) so callers can place a
+// halo or right-anchor without a DOM measure pass.
+//
+// opts: { x, y (baseline), fontSize, color, anchor: 'start'|'middle'|'end' }
 FB.Typeset.buildFractionSVG = function (doc, raw, opts) {
-  opts = opts || {};
-  var fs = opts.fontSize || 12, color = opts.color || '#000', anchor = opts.anchor || 'start';
-  var g = doc.createElementNS(SVGNS, 'g');
-  var info = FB.Typeset.parseFraction(raw);
-  function text(t, x, y) {
-    var el = doc.createElementNS(SVGNS, 'text');
-    el.setAttribute('x', x); el.setAttribute('y', y);
-    el.setAttribute('font-size', fs); el.setAttribute('fill', color);
-    el.setAttribute('text-anchor', anchor === 'end' ? 'end' : 'start');
-    el.setAttribute('font-family', 'Helvetica, Arial, sans-serif');
-    el.textContent = String(t);
-    return el;
-  }
-  if (info.kind === 'text' || info.kind === 'integer') {
-    g.appendChild(text(info.kind === 'integer' ? info.whole : info.text, opts.x || 0, opts.y || 0));
-    return g;
-  }
-  // stacked fraction (and optional whole part for mixed)
-  var x = opts.x || 0, y = opts.y || 0;
-  var half = fs * 0.7, gap = 2, barW = fs * 1.1;
-  var cursorX = x;
-  if (info.kind === 'mixed') { g.appendChild(text(info.whole, cursorX, y)); cursorX += fs * 0.7; }
-  g.appendChild(text(info.num, cursorX + barW / 2, y - half - gap)).setAttribute('text-anchor','middle');
-  var line = doc.createElementNS(SVGNS, 'line');
-  line.setAttribute('x1', cursorX); line.setAttribute('y1', y - half);
-  line.setAttribute('x2', cursorX + barW); line.setAttribute('y2', y - half);
-  line.setAttribute('stroke', color); line.setAttribute('stroke-width', Math.max(1, fs / 12));
-  g.appendChild(line);
-  g.appendChild(text(info.den, cursorX + barW / 2, y + gap + half * 0.9)).setAttribute('text-anchor','middle');
-  return g;
+	opts = opts || {};
+	var fs = opts.fontSize || 12;
+	var color = opts.color || '#000';
+	var anchor = opts.anchor || 'start';
+	var fsF = fs * 0.92;
+	var weight = opts.fontWeight || 'normal';
+	var family = opts.fontFamily || 'inherit';
+
+	var tokens = FB.Typeset.tokenizeLabel(raw);
+	var totalW = FB.Typeset.measureLabel(tokens, fs);
+
+	var g = doc.createElementNS(SVGNS, 'g');
+	g.__fbWidth = totalW;
+	g.setAttribute('data-w', String(Math.round(totalW)));
+
+	var y = opts.y || 0;
+	var startX = opts.x || 0;
+	if (anchor === 'end') { startX = (opts.x || 0) - totalW; }
+	else if (anchor === 'middle') { startX = (opts.x || 0) - totalW / 2; }
+
+	function text(t, x, ty, mid, sz) {
+		var el = doc.createElementNS(SVGNS, 'text');
+		el.setAttribute('x', x);
+		el.setAttribute('y', ty);
+		el.setAttribute('font-size', sz || fs);
+		el.setAttribute('fill', color);
+		el.setAttribute('text-anchor', mid ? 'middle' : 'start');
+		el.setAttribute('font-family', family);
+		if (weight !== 'normal') { el.setAttribute('font-weight', weight); }
+		el.textContent = String(t);
+		g.appendChild(el);
+		return el;
+	}
+
+	var cx = startX;
+	for (var i = 0; i < tokens.length; i++) {
+		var tk = tokens[i];
+		if (tk.type === 'text') {
+			text(tk.text, cx, y);
+			cx += FB.Typeset.advance(tk.text, fs);
+			continue;
+		}
+		// fraction (optionally mixed)
+		if (tk.whole !== null && tk.whole !== undefined) {
+			text(tk.whole, cx, y);
+			cx += FB.Typeset.advance(String(tk.whole), fs) + fs * 0.12;
+		}
+		var boxW = Math.max(
+			FB.Typeset.advance(String(tk.num), fsF),
+			FB.Typeset.advance(String(tk.den), fsF)
+		) + fsF * 0.30;
+		var midX = cx + boxW / 2;
+		var barY = y - fs * 0.34;
+		// numerator (sits above the rule)
+		text(tk.num, midX, barY - fsF * 0.18, true, fsF);
+		// fraction rule
+		var line = doc.createElementNS(SVGNS, 'line');
+		line.setAttribute('x1', cx); line.setAttribute('y1', barY);
+		line.setAttribute('x2', cx + boxW); line.setAttribute('y2', barY);
+		line.setAttribute('stroke', color);
+		line.setAttribute('stroke-width', Math.max(1, fs / 14));
+		line.setAttribute('stroke-linecap', 'round');
+		g.appendChild(line);
+		// denominator (sits below the rule)
+		text(tk.den, midX, barY + fsF * 0.86, true, fsF);
+		cx += boxW + fs * 0.10;
+	}
+
+	return g;
 };
 
 // src/render/svgRenderer.js
@@ -2044,6 +2617,28 @@ FB.Renderer = FB.Renderer || {};
 
 	FB.Renderer.create = function (svgRoot, doc) {
 		var previewSpec = null;
+
+		// Theme colors are read from CSS custom properties on the canvas each
+		// render, so a skin swap (data-theme on <html>) instantly re-skins the
+		// canvas marks too -- no per-theme renderer code, no inline styles. The
+		// fallbacks ARE the original drab values, so an unstyled build is identical.
+		var TH = {
+			ink: '#000000', split: '#FF0000', guide: '#FF0000',
+			halo: 'rgba(255,255,255,0.72)', font: 'Helvetica, Arial, sans-serif'
+		};
+		function readTheme() {
+			try {
+				var view = svgRoot && svgRoot.ownerDocument && svgRoot.ownerDocument.defaultView;
+				if (!view || !view.getComputedStyle) { return; }
+				var cs = view.getComputedStyle(svgRoot);
+				function g(name, fb) { var v = cs.getPropertyValue(name); v = v && v.trim(); return v || fb; }
+				TH.ink = g('--fb-ink', '#000000');
+				TH.split = g('--fb-split-stroke', '#FF0000');
+				TH.guide = g('--fb-guide', '#FF0000');
+				TH.halo = g('--fb-label-halo', 'rgba(255,255,255,0.72)');
+				TH.font = g('--fb-canvas-font', 'Helvetica, Arial, sans-serif');
+			} catch (e) { /* keep defaults */ }
+		}
 
 		function elem(tag) {
 			return doc.createElementNS(SVGNS, tag);
@@ -2069,12 +2664,41 @@ FB.Renderer = FB.Renderer || {};
 			var t = elem('text');
 			t.setAttribute('x', x);
 			t.setAttribute('y', y);
-			t.setAttribute('fill', '#000000');
+			t.setAttribute('fill', TH.ink);
 			t.setAttribute('font-size', 12);
-			t.setAttribute('font-family', 'Helvetica, Arial, sans-serif');
+			t.setAttribute('font-family', TH.font);
 			t.setAttribute('text-anchor', anchor === 'end' ? 'end' : 'start');
 			t.textContent = String(str);
 			return t;
+		}
+
+		// Translucent rounded "halo" drawn behind label / fraction text so it stays
+		// legible over any bar fill or where bars overlap. Sized from the typeset
+		// run's measured advance width (group.__fbWidth). Skipped when the active
+		// theme sets --fb-label-halo to a fully transparent value.
+		function haloFor(group, x, y, anchor, fs) {
+			var w = group && group.__fbWidth ? group.__fbWidth : 0;
+			if (!w) { return null; }
+			var halo = TH.halo;
+			if (!halo || halo === 'transparent' || /\b0\s*\)\s*$/.test(halo)) { return null; }
+			var padX = fs * 0.4, padTop = fs * 1.02, padBot = fs * 0.5;
+			var rx = (anchor === 'end') ? x - w - padX
+				: (anchor === 'middle') ? x - w / 2 - padX : x - padX;
+			return rect(rx, y - padTop, w + padX * 2, padTop + padBot, {
+				fill: halo, stroke: 'none',
+				rx: Math.max(2, fs * 0.3), ry: Math.max(2, fs * 0.3)
+			});
+		}
+
+		// Place a typeset label/fraction (with halo) onto a layer.
+		function placeLabel(layer, raw, x, y, anchor, fs, weight) {
+			var grp = FB.Typeset.buildFractionSVG(doc, raw, {
+				x: x, y: y, anchor: anchor, fontSize: fs,
+				color: TH.ink, fontFamily: TH.font, fontWeight: weight || 'normal'
+			});
+			var h = haloFor(grp, x, y, anchor, fs);
+			if (h) { layer.appendChild(h); }
+			layer.appendChild(grp);
 		}
 
 		function renderMat(layer, m) {
@@ -2082,7 +2706,7 @@ FB.Renderer = FB.Renderer || {};
 			g.setAttribute('class', 'mat');
 			g.appendChild(rect(m.x, m.y, m.w, m.h, {
 				fill: m.color,
-				stroke: '#000000',
+				stroke: TH.ink,
 				'stroke-width': m.isSelected ? 2.5 : 1
 			}));
 			layer.appendChild(g);
@@ -2102,7 +2726,7 @@ FB.Renderer = FB.Renderer || {};
 					var s = b.splits[i];
 					g.appendChild(rect(b.x + s.x, b.y + s.y, s.w, s.h, {
 						fill: s.color,
-						stroke: '#FF0000',
+						stroke: TH.split,
 						'stroke-width': 1
 					}));
 					if (s.isSelected === true) {
@@ -2112,7 +2736,7 @@ FB.Renderer = FB.Renderer || {};
 						var ycenter = s.y + (s.h / 2);
 						g.appendChild(rect(b.x + xcenter - 2, b.y + ycenter - 2, 4, 4, {
 							fill: 'none',
-							stroke: '#FF0000',
+							stroke: TH.split,
 							'stroke-width': 1
 						}));
 					}
@@ -2122,33 +2746,23 @@ FB.Renderer = FB.Renderer || {};
 			// selection outline (stroke-width 2.5 when selected else 1)
 			g.appendChild(rect(b.x, b.y, b.w, b.h, {
 				fill: 'none',
-				stroke: '#000000',
+				stroke: TH.ink,
 				'stroke-width': b.isSelected ? 2.5 : 1
 			}));
 
 			// unit bar caption below the bar
 			if (b.isUnitBar) {
-				g.appendChild(textNode('Unit Bar', b.x, b.y + b.h + 15, 'start'));
+				placeLabel(g, 'Unit Bar', b.x, b.y + b.h + 15, 'start', 12, 'bold');
 			}
 
 			// fraction typeset at top-right (anchor end)
 			if (b.fraction !== null && b.fraction !== undefined && String(b.fraction) !== '') {
-				var frac = FB.Typeset.buildFractionSVG(doc, b.fraction, {
-					x: b.x + b.w - 5,
-					// Raised so the stacked fraction sits fully ABOVE the bar edge
-					// (matching the original flat-text placement) instead of the
-					// denominator dipping into the bar interior.
-					y: b.y - 15,
-					anchor: 'end',
-					fontSize: 12,
-					color: '#000000'
-				});
-				g.appendChild(frac);
+				placeLabel(g, b.fraction, b.x + b.w - 5, b.y - 14, 'end', 13);
 			}
 
-			// label at bottom-left
+			// label at bottom-left (typeset so mixed numbers / fractions render nicely)
 			if (b.label !== null && b.label !== undefined && String(b.label) !== '') {
-				g.appendChild(textNode(b.label, b.x + 5, b.y + b.h - 5, 'start'));
+				placeLabel(g, b.label, b.x + 6, b.y + b.h - 6, 'start', 12);
 			}
 
 			layer.appendChild(g);
@@ -2160,7 +2774,7 @@ FB.Renderer = FB.Renderer || {};
 			line.setAttribute('y1', y1);
 			line.setAttribute('x2', x2);
 			line.setAttribute('y2', y2);
-			line.setAttribute('stroke', '#FF0000');
+			line.setAttribute('stroke', TH.guide);
 			line.setAttribute('stroke-width', 1);
 			return line;
 		}
@@ -2229,6 +2843,7 @@ FB.Renderer = FB.Renderer || {};
 
 		function render(scene) {
 			scene = scene || {};
+			readTheme();
 			var bars = scene.bars || [];
 			var mats = scene.mats || [];
 
@@ -2253,6 +2868,17 @@ FB.Renderer = FB.Renderer || {};
 			overlayLayer.setAttribute('class', 'overlay');
 			renderOverlay(overlayLayer, scene);
 			svgRoot.appendChild(overlayLayer);
+
+			// Extension point: external layers (a Prolog reasoner drawing
+			// constraint annotations, Lit-based custom-element overlays, etc.)
+			// registered via FB.Hooks.registerOverlay are invoked here every
+			// frame and (re)draw into the freshly rebuilt tree. See src/api/hooks.js.
+			if (FB.Hooks && typeof FB.Hooks.runOverlays === 'function') {
+				FB.Hooks.runOverlays({ svgRoot: svgRoot, scene: scene, doc: doc, ns: SVGNS });
+			}
+			if (FB.Hooks && typeof FB.Hooks.emit === 'function') {
+				FB.Hooks.emit('render', scene);
+			}
 
 			return svgRoot.children.length;
 		}
@@ -3201,6 +3827,8 @@ FB.Toolbar.ui = {
 	previous: null,         // action_previous
 	next: null,             // action_next
 	hideButton: null,       // hide mode: hide the clicked element (id)
+	onHideMode: null,       // hide mode entered/exited (active:boolean)
+	onHideChanged: null,    // a tool was hidden / shown (refresh banner + Show All)
 	setToolSelected: null,  // mark a tool element selected (id, on)
 	setColorSelected: null  // mark a color swatch selected
 };
@@ -3219,6 +3847,7 @@ FB.Toolbar.dispatch = function (controller, id, opts) {
 	// $(this).hide(); hiddenButtonsName.push(thisId).)
 	if (state.currentAction === 'hide' && id.indexOf('hide') === -1) {
 		if (ui.hideButton) { ui.hideButton(id); }
+		if (ui.onHideChanged) { ui.onHideChanged(); }
 		return true;
 	}
 
@@ -3235,6 +3864,7 @@ FB.Toolbar.dispatch = function (controller, id, opts) {
 			if (ui.setToolSelected) { ui.setToolSelected(id, true); }
 		}
 		controller.handleToolUpdate(toolName, tool_on);
+		if (toolName === 'hide' && ui.onHideMode) { ui.onHideMode(tool_on); }
 		controller.refresh();
 		return true;
 	}
@@ -3953,17 +4583,20 @@ FB.AppActions.create = function (deps) {
 		var b = sel[0];
 		var input = doc.getElementById('labelInput');
 		if (!input) { return; }
-		// Map model coords -> client pixels. viewBox is 0..1000 x 0..700 and the
-		// canvas keeps that aspect ratio (no letterboxing), so the scale is uniform.
+		// Map model coords -> client pixels. The canvas fills the stage and
+		// letterboxes a 1000x700 viewBox (preserveAspectRatio="xMidYMid meet"),
+		// so the content scale is the smaller axis ratio and the drawing is
+		// centered -- account for both the uniform scale and the letterbox offset.
 		var rect = svgRoot.getBoundingClientRect
 			? svgRoot.getBoundingClientRect()
 			: { left: 0, top: 0, width: 1000, height: 700 };
-		var sx = rect.width / 1000;
-		var sy = rect.height / 700;
+		var scale = Math.min(rect.width / 1000, rect.height / 700) || 1;
+		var offX = (rect.width - 1000 * scale) / 2;
+		var offY = (rect.height - 700 * scale) / 2;
 		input.style.position = 'fixed';
-		input.style.left = (rect.left + (b.x + 5) * sx) + 'px';
-		input.style.top = (rect.top + (b.y + b.h - 22) * sy) + 'px';
-		input.style.width = Math.max(40, (b.w - 13) * sx) + 'px';
+		input.style.left = (rect.left + offX + (b.x + 5) * scale) + 'px';
+		input.style.top = (rect.top + offY + (b.y + b.h - 22) * scale) + 'px';
+		input.style.width = Math.max(40, (b.w - 13) * scale) + 'px';
 		input.value = b.label || '';
 		input.classList.add('is-editing');
 		input.style.display = 'inline-block';
@@ -3981,6 +4614,37 @@ FB.AppActions.create = function (deps) {
 				hiddenEls.push(el);
 			}
 		}
+		updateHideUi();
+	}
+
+	// Reflect the hidden-tool count into the Show All button + the banner so the
+	// (otherwise invisible, "locked") hide state is always legible.
+	function updateHideUi() {
+		var n = hiddenEls.length;
+		var show = doc.getElementById('action_show');
+		if (show) {
+			show.classList.toggle('is-disabled', n === 0);
+			show.setAttribute('aria-disabled', n === 0 ? 'true' : 'false');
+			show.textContent = n > 0 ? (t('show') + ' (' + n + ')') : t('show');
+		}
+		var count = doc.getElementById('fb-hide-count');
+		if (count) {
+			count.textContent = n > 0
+				? (' ' + n + (n === 1 ? ' tool hidden.' : ' tools hidden.'))
+				: '';
+		}
+	}
+
+	// Enter / leave hide mode: toggle the body affordance class, show the banner,
+	// and swap the Hide control's label to "Done hiding" so it clearly reads as a
+	// toggle the user must turn back off.
+	function setHideMode(active) {
+		if (doc.body) { doc.body.classList.toggle('fb-hide-active', !!active); }
+		var banner = doc.getElementById('fb-hide-banner');
+		if (banner) { banner.toggleAttribute('hidden', !active); }
+		var hideBtn = doc.getElementById('tool_hide');
+		if (hideBtn) { hideBtn.textContent = active ? t('hide_done') : t('hide'); }
+		updateHideUi();
 	}
 
 	function showAll() {
@@ -3989,6 +4653,7 @@ FB.AppActions.create = function (deps) {
 			el.removeAttribute('hidden');
 		}
 		FB.hiddenButtonNames.length = 0;
+		updateHideUi();
 	}
 
 	function applyHidden(names) {
@@ -4032,6 +4697,8 @@ FB.AppActions.create = function (deps) {
 		editLabel: editLabel,
 		hideLabel: hideLabel,
 		hideButton: hideButton,
+		setHideMode: setHideMode,
+		updateHideUi: updateHideUi,
 		showAll: showAll,
 		applyState: applyStateObject,
 		setToolSelected: setToolSelected,
@@ -4149,6 +4816,156 @@ FB.GalleryUI.bind = function (panelEl, gallery, controller, opts) {
 	};
 };
 
+// src/chrome/swatches.js
+//
+// Per-theme quick-fill swatch palettes. The 8 quick swatches in the toolbar
+// drive the current fill color (read off each swatch's data-color by
+// FB.Toolbar). Each skin gets its own on-brand palette: Classic keeps the
+// original eight, Bubblegum gets candy colors, etc. Applied by setting both the
+// swatch's data-color (so picking uses the themed color) and its background
+// (scripted style -- CSP-safe, same mechanism the app already uses for the
+// canvas background swatches). No eval, no innerHTML.
+
+FB.Swatches = FB.Swatches || (function () {
+	var palettes = {
+		// Classic -- the original eight (kept verbatim).
+		'':       ['#FFFF66', '#ACBEFF', '#E6E6E6', '#FFFFFF', '#CCFF66', '#FFCC66', '#DD99FF', '#FF92DA'],
+		// Hermes -- parchment / gold / rust / teal scholarly palette.
+		'hermes': ['#F0D68A', '#E0B84C', '#C96F43', '#6FA3AD', '#E7D9BB', '#B8915A', '#A8B79A', '#D98C6A'],
+		// Crimson (IU) -- cream + crimson family, a couple of muted neutrals.
+		'iu':     ['#FBE9E9', '#F2C9C9', '#DE9A9A', '#C56A6A', '#F6EFDF', '#EADCC2', '#CBB07A', '#BBD2C6'],
+		// Chalkboard -- bright chalk pastels that pop on the dark board.
+		'chalk':  ['#F6D04D', '#FF9A7A', '#8FD6C4', '#9EC5FF', '#F4A9D4', '#C9B3FF', '#F3EFE6', '#B6E08A'],
+		// Bubblegum -- candy pinks, purples, and pastels.
+		'candy':  ['#FFD1E8', '#FF8FC4', '#FF5CA8', '#C9B3FF', '#A8E6FF', '#B6F5C9', '#FFF2A8', '#FFC1A8']
+	};
+
+	// Recolor the 8 quick swatches for `theme` and keep the active selection on
+	// the same slot (re-pointing the controller's current fill to the themed hue).
+	function apply(doc, theme, controller) {
+		if (!doc || !doc.getElementById) { return; }
+		var pal = palettes[theme] || palettes[''];
+		var selIndex = 0;
+		for (var i = 0; i < 8; i++) {
+			var el = doc.getElementById('setColor' + (i + 1));
+			if (!el) { continue; }
+			if (el.classList && el.classList.contains('colorSelected')) { selIndex = i; }
+			el.setAttribute('data-color', pal[i]);
+			el.style.backgroundColor = pal[i];
+		}
+		if (controller && typeof controller.setFillColor === 'function') {
+			controller.setFillColor(pal[selIndex] || pal[0]);
+		}
+	}
+
+	return { palettes: palettes, apply: apply };
+})();
+
+// src/chrome/toolbarDrag.js
+//
+// Makes the toolbar a draggable floating panel (docked top-left by default).
+// Drag by its handle; position persists in localStorage and is clamped to the
+// workspace. Pointer Events only, scripted styles only -- no eval / network /
+// innerHTML, so the seal holds.
+
+FB.ToolbarDrag = FB.ToolbarDrag || {};
+
+FB.ToolbarDrag.install = function (doc, win) {
+	if (!doc || !doc.getElementById) { return; }
+	var panel = doc.getElementById('fb-toolbar');
+	var handle = doc.getElementById('fb-toolbar-handle');
+	var dock = doc.getElementById('fb-toolbar-dock');
+	if (!panel || !handle) { return; }
+	var KEY = 'fb-toolbar-pos';
+	var DEFAULT = { left: 10, top: 10 };
+
+	function workspace() { return panel.parentElement; }
+
+	function clamp(left, top) {
+		var ws = workspace();
+		var wr = ws && ws.getBoundingClientRect
+			? ws.getBoundingClientRect()
+			: { width: (win && win.innerWidth) || 800, height: (win && win.innerHeight) || 600 };
+		var maxL = Math.max(0, wr.width - panel.offsetWidth);
+		var maxT = Math.max(0, wr.height - panel.offsetHeight);
+		return {
+			left: Math.min(Math.max(0, left), maxL),
+			top: Math.min(Math.max(0, top), maxT)
+		};
+	}
+
+	function setPos(left, top) {
+		var c = clamp(left, top);
+		panel.style.left = c.left + 'px';
+		panel.style.top = c.top + 'px';
+	}
+
+	function save() {
+		try {
+			if (win && win.localStorage) {
+				win.localStorage.setItem(KEY, JSON.stringify({
+					left: parseFloat(panel.style.left) || DEFAULT.left,
+					top: parseFloat(panel.style.top) || DEFAULT.top
+				}));
+			}
+		} catch (e) { /* ignore */ }
+	}
+
+	function restore() {
+		var pos = null;
+		try { pos = win && win.localStorage && JSON.parse(win.localStorage.getItem(KEY)); } catch (e) { /* ignore */ }
+		if (pos && isFinite(pos.left) && isFinite(pos.top)) { setPos(pos.left, pos.top); }
+	}
+
+	var dragging = false, startX = 0, startY = 0, baseL = 0, baseT = 0, pid = null;
+
+	function down(e) {
+		if (e.target === dock) { return; } // let the reset button click through
+		dragging = true;
+		panel.classList.add('is-dragging');
+		pid = (e.pointerId !== undefined ? e.pointerId : 0);
+		try { handle.setPointerCapture(pid); } catch (_) { /* ignore */ }
+		startX = e.clientX; startY = e.clientY;
+		var r = panel.getBoundingClientRect();
+		var wr = workspace().getBoundingClientRect();
+		baseL = r.left - wr.left; baseT = r.top - wr.top;
+		if (e.preventDefault) { e.preventDefault(); }
+	}
+	function move(e) {
+		if (!dragging) { return; }
+		setPos(baseL + (e.clientX - startX), baseT + (e.clientY - startY));
+	}
+	function up() {
+		if (!dragging) { return; }
+		dragging = false;
+		panel.classList.remove('is-dragging');
+		try { handle.releasePointerCapture(pid); } catch (_) { /* ignore */ }
+		save();
+	}
+
+	handle.addEventListener('pointerdown', down);
+	handle.addEventListener('pointermove', move);
+	handle.addEventListener('pointerup', up);
+	handle.addEventListener('pointercancel', up);
+
+	if (dock) {
+		dock.addEventListener('click', function (e) {
+			if (e && e.stopPropagation) { e.stopPropagation(); }
+			setPos(DEFAULT.left, DEFAULT.top);
+			save();
+		});
+	}
+
+	if (win && win.addEventListener) {
+		win.addEventListener('resize', function () {
+			var l = parseFloat(panel.style.left), t = parseFloat(panel.style.top);
+			if (isFinite(l) && isFinite(t)) { setPos(l, t); }
+		});
+	}
+
+	restore();
+};
+
 // src/i18n/strings.js
 //
 // String table for Fraction Bars. The English ('eng') entries are transcribed
@@ -4190,8 +5007,9 @@ FB.I18N = FB.I18N || {};
 		'new': 'New',
 		print: 'Print',
 		properties: 'Properties',
-		hide: 'Hide',
-		show: 'Show',
+		hide: 'Hide Tools',
+		show: 'Show All',
+		hide_done: 'Done hiding',
 		previous: 'Previous',
 		next: 'Next',
 
@@ -4572,6 +5390,8 @@ FB.Main.boot = function (doc, win) {
 			ui.clearAll = actions.clearAll; ui.showAll = actions.showAll;
 			ui.previous = actions.previous; ui.next = actions.next;
 			ui.hideButton = actions.hideButton;
+			ui.onHideMode = actions.setHideMode;
+			ui.onHideChanged = actions.updateHideUi;
 			ui.setToolSelected = actions.setToolSelected;
 			ui.setColorSelected = actions.setColorSelected;
 		}
@@ -4594,6 +5414,52 @@ FB.Main.boot = function (doc, win) {
 	// ----- Pointer input -----------------------------------------------------
 	if (FB.Pointer && svgRoot && typeof FB.Pointer.attach === 'function') {
 		FB.Pointer.attach(svgRoot, controller, {});
+	}
+
+	// ----- Theme / skin picker -----------------------------------------------
+	// A skin is a data-theme attribute on <html>; all chrome + canvas colors are
+	// CSS custom properties that cascade from it (see app.css). Persisted in
+	// localStorage. After a swap we refresh so the renderer re-reads the themed
+	// --fb-ink / --fb-split-stroke / --fb-guide / --fb-label-halo off the canvas.
+	(function () {
+		var sel = doc.getElementById('fb-theme');
+		var root = doc.documentElement;
+		function applyTheme(name) {
+			if (name) { root.setAttribute('data-theme', name); }
+			else { root.removeAttribute('data-theme'); }
+			// Repaint the quick swatches to the theme's palette, then re-render so
+			// the canvas re-reads themed --fb-ink / strokes / halo.
+			if (FB.Swatches && typeof FB.Swatches.apply === 'function') {
+				FB.Swatches.apply(doc, name || '', controller);
+			}
+			controller.refresh();
+		}
+		var saved = '';
+		try { saved = (win && win.localStorage && win.localStorage.getItem('fb-theme')) || ''; } catch (e) { /* ignore */ }
+		if (sel) {
+			if (saved) { sel.value = saved; }
+			applyTheme(sel.value);
+			sel.addEventListener('change', function () {
+				var v = sel.value;
+				try { if (win && win.localStorage) { win.localStorage.setItem('fb-theme', v); } } catch (e) { /* ignore */ }
+				applyTheme(v);
+			});
+		} else if (saved) {
+			applyTheme(saved);
+		}
+	})();
+
+	// "Done hiding" button leaves hide mode exactly like tapping Hide Tools again.
+	var hideDone = doc.getElementById('fb-hide-done');
+	if (hideDone && FB.Toolbar && typeof FB.Toolbar.dispatch === 'function') {
+		hideDone.addEventListener('click', function () {
+			FB.Toolbar.dispatch(controller, 'tool_hide', {});
+		});
+	}
+
+	// Draggable, docked-left toolbar panel (position persisted to localStorage).
+	if (FB.ToolbarDrag && typeof FB.ToolbarDrag.install === 'function') {
+		FB.ToolbarDrag.install(doc, win);
 	}
 
 	// ----- Keyboard shortcuts (ports fractionbars.js keydown/keyup) ----------
@@ -4668,6 +5534,7 @@ FB.Main.boot = function (doc, win) {
 
 	// Initial label/i18n/paint.
 	applyI18n();
+	if (actions && typeof actions.updateHideUi === 'function') { actions.updateHideUi(); }
 	controller.refresh();
 
 	var app = {

@@ -4,6 +4,62 @@ A single-file, offline, dependency-free fraction-bars manipulative. The shipped
 artifact is one self-contained `Fraction_Bars.html` that runs from `file://`, a
 USB stick, an LMS upload, or any static host with no network access of any kind.
 
+## Summer 2026 revision — what changed
+
+- **Fits the screen.** The toolbar is a compact panel **docked at the left** by
+  default; **drag its "Tools" handle** to reposition it anywhere (position is
+  persisted; the ⤢ button re-docks it). The canvas fills the rest. The full rail
+  is visible without page scrolling on any normal classroom screen.
+- **Skins.** A theme picker in the header swaps the whole look (persisted to
+  `localStorage`). Every chrome *and* canvas color/font/radius is a CSS custom
+  property declared on `:root` with the original drab values as defaults; a skin
+  is just an override block keyed on `html[data-theme="…"]` in `app.css`. The
+  **quick-fill swatches track the theme** too (`src/chrome/swatches.js`): Classic
+  keeps the original eight, Bubblegum gets candy colors, Crimson gets cream+crimson,
+  etc. Shipped skins: Classic (default), Hermes (parchment/gold), Crimson
+  (cream+crimson academic), Chalkboard, Bubblegum. Add one by appending a
+  `html[data-theme="x"]{…}` block, an `<option>`, and a palette in `swatches.js`.
+  No external fonts (sealed/offline) — skins use system font stacks.
+- **Fraction typesetting** (`src/render/typeset.js`). Labels now typeset mixed
+  numbers and fractions *inside prose*: `"1 1/2 oranges"` renders as a stacked 1½
+  followed by " oranges" (the TeX `$1 \frac{1}{2}$ oranges`). This is done with
+  native SVG + a deterministic Helvetica advance-width estimator — **not MathJax**.
+  MathJax/KaTeX were rejected on purpose: a CDN load violates `connect-src 'none'`,
+  and inlining ~1 MB of third-party code that itself uses `new Function` would
+  break both the script-src hash and the no-eval seal. The in-house typesetter is
+  the same visual result with zero network and zero dynamic code.
+- **Legible labels over overlaps.** Each label/fraction gets a translucent rounded
+  halo (themeable via `--fb-label-halo`) so it stays readable over any bar fill or
+  where bars overlap.
+- **Hide mode is obvious.** "Hide Tools" enters a clearly-signposted mode: a banner
+  appears, the control relabels to "Done hiding", a live hidden-count shows on
+  "Show All (n)", and hidable buttons advertise (crosshair + dashed outline) that a
+  tap removes them. "Show All" is dimmed/inert when nothing is hidden.
+
+### Canvas extension hooks (`src/api/hooks.js`)
+
+`FB.Hooks` is the stable seam for bolting reasoning + reactive UI onto the canvas
+without touching the sealed core (no eval / network / innerHTML):
+
+- **Prolog.** `FB.Hooks.toProlog(scene)` emits ground facts —
+  `bar(b0, X, Y, W, H).`, `unit_bar/1`, `fraction(B, Num, Den).`, `label/2`,
+  `part(B, Index, X, W).`, `parts_count/2` — for a logic engine to query
+  (equivalence, valid partition, …). `FB.Hooks.toFacts(scene)` returns the same as
+  objects. `FB.Hooks.on('render', cb)` recomputes whenever the model changes.
+- **Lit / web components.** `FB.Hooks.registerOverlay(fn)` registers a draw
+  callback invoked every render with `{ svgRoot, scene, doc, ns }`; the SVG tree is
+  rebuilt each frame, so overlays are idempotent redraws. A Lit `ReactiveController`
+  can instead subscribe to `'render'`, read `toFacts(scene)`, and update a host
+  element positioned over `.fb-stage`.
+
+### Build outputs
+
+`node build.mjs` writes the sealed `Fraction_Bars.html`. During development a
+relaxed-CSP `Fraction_Bars.dev.html` (identical bundle, no CSP meta) is also useful
+for tooling/screenshots that need to drive the page — never ship it; it is not
+hash-pinned.
+
+
 The application is authored as small ES classic scripts under `src/`, each
 attaching to a single global `FB` namespace. A deterministic build concatenates
 them (plus the CSS and body markup) into the sealed `Fraction_Bars.html`, deriving

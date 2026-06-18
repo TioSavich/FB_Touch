@@ -19,6 +19,28 @@ FB.Renderer = FB.Renderer || {};
 	FB.Renderer.create = function (svgRoot, doc) {
 		var previewSpec = null;
 
+		// Theme colors are read from CSS custom properties on the canvas each
+		// render, so a skin swap (data-theme on <html>) instantly re-skins the
+		// canvas marks too -- no per-theme renderer code, no inline styles. The
+		// fallbacks ARE the original drab values, so an unstyled build is identical.
+		var TH = {
+			ink: '#000000', split: '#FF0000', guide: '#FF0000',
+			halo: 'rgba(255,255,255,0.72)', font: 'Helvetica, Arial, sans-serif'
+		};
+		function readTheme() {
+			try {
+				var view = svgRoot && svgRoot.ownerDocument && svgRoot.ownerDocument.defaultView;
+				if (!view || !view.getComputedStyle) { return; }
+				var cs = view.getComputedStyle(svgRoot);
+				function g(name, fb) { var v = cs.getPropertyValue(name); v = v && v.trim(); return v || fb; }
+				TH.ink = g('--fb-ink', '#000000');
+				TH.split = g('--fb-split-stroke', '#FF0000');
+				TH.guide = g('--fb-guide', '#FF0000');
+				TH.halo = g('--fb-label-halo', 'rgba(255,255,255,0.72)');
+				TH.font = g('--fb-canvas-font', 'Helvetica, Arial, sans-serif');
+			} catch (e) { /* keep defaults */ }
+		}
+
 		function elem(tag) {
 			return doc.createElementNS(SVGNS, tag);
 		}
@@ -43,12 +65,41 @@ FB.Renderer = FB.Renderer || {};
 			var t = elem('text');
 			t.setAttribute('x', x);
 			t.setAttribute('y', y);
-			t.setAttribute('fill', '#000000');
+			t.setAttribute('fill', TH.ink);
 			t.setAttribute('font-size', 12);
-			t.setAttribute('font-family', 'Helvetica, Arial, sans-serif');
+			t.setAttribute('font-family', TH.font);
 			t.setAttribute('text-anchor', anchor === 'end' ? 'end' : 'start');
 			t.textContent = String(str);
 			return t;
+		}
+
+		// Translucent rounded "halo" drawn behind label / fraction text so it stays
+		// legible over any bar fill or where bars overlap. Sized from the typeset
+		// run's measured advance width (group.__fbWidth). Skipped when the active
+		// theme sets --fb-label-halo to a fully transparent value.
+		function haloFor(group, x, y, anchor, fs) {
+			var w = group && group.__fbWidth ? group.__fbWidth : 0;
+			if (!w) { return null; }
+			var halo = TH.halo;
+			if (!halo || halo === 'transparent' || /\b0\s*\)\s*$/.test(halo)) { return null; }
+			var padX = fs * 0.4, padTop = fs * 1.02, padBot = fs * 0.5;
+			var rx = (anchor === 'end') ? x - w - padX
+				: (anchor === 'middle') ? x - w / 2 - padX : x - padX;
+			return rect(rx, y - padTop, w + padX * 2, padTop + padBot, {
+				fill: halo, stroke: 'none',
+				rx: Math.max(2, fs * 0.3), ry: Math.max(2, fs * 0.3)
+			});
+		}
+
+		// Place a typeset label/fraction (with halo) onto a layer.
+		function placeLabel(layer, raw, x, y, anchor, fs, weight) {
+			var grp = FB.Typeset.buildFractionSVG(doc, raw, {
+				x: x, y: y, anchor: anchor, fontSize: fs,
+				color: TH.ink, fontFamily: TH.font, fontWeight: weight || 'normal'
+			});
+			var h = haloFor(grp, x, y, anchor, fs);
+			if (h) { layer.appendChild(h); }
+			layer.appendChild(grp);
 		}
 
 		function renderMat(layer, m) {
@@ -56,7 +107,7 @@ FB.Renderer = FB.Renderer || {};
 			g.setAttribute('class', 'mat');
 			g.appendChild(rect(m.x, m.y, m.w, m.h, {
 				fill: m.color,
-				stroke: '#000000',
+				stroke: TH.ink,
 				'stroke-width': m.isSelected ? 2.5 : 1
 			}));
 			layer.appendChild(g);
@@ -76,7 +127,7 @@ FB.Renderer = FB.Renderer || {};
 					var s = b.splits[i];
 					g.appendChild(rect(b.x + s.x, b.y + s.y, s.w, s.h, {
 						fill: s.color,
-						stroke: '#FF0000',
+						stroke: TH.split,
 						'stroke-width': 1
 					}));
 					if (s.isSelected === true) {
@@ -86,7 +137,7 @@ FB.Renderer = FB.Renderer || {};
 						var ycenter = s.y + (s.h / 2);
 						g.appendChild(rect(b.x + xcenter - 2, b.y + ycenter - 2, 4, 4, {
 							fill: 'none',
-							stroke: '#FF0000',
+							stroke: TH.split,
 							'stroke-width': 1
 						}));
 					}
@@ -96,33 +147,23 @@ FB.Renderer = FB.Renderer || {};
 			// selection outline (stroke-width 2.5 when selected else 1)
 			g.appendChild(rect(b.x, b.y, b.w, b.h, {
 				fill: 'none',
-				stroke: '#000000',
+				stroke: TH.ink,
 				'stroke-width': b.isSelected ? 2.5 : 1
 			}));
 
 			// unit bar caption below the bar
 			if (b.isUnitBar) {
-				g.appendChild(textNode('Unit Bar', b.x, b.y + b.h + 15, 'start'));
+				placeLabel(g, 'Unit Bar', b.x, b.y + b.h + 15, 'start', 12, 'bold');
 			}
 
 			// fraction typeset at top-right (anchor end)
 			if (b.fraction !== null && b.fraction !== undefined && String(b.fraction) !== '') {
-				var frac = FB.Typeset.buildFractionSVG(doc, b.fraction, {
-					x: b.x + b.w - 5,
-					// Raised so the stacked fraction sits fully ABOVE the bar edge
-					// (matching the original flat-text placement) instead of the
-					// denominator dipping into the bar interior.
-					y: b.y - 15,
-					anchor: 'end',
-					fontSize: 12,
-					color: '#000000'
-				});
-				g.appendChild(frac);
+				placeLabel(g, b.fraction, b.x + b.w - 5, b.y - 14, 'end', 13);
 			}
 
-			// label at bottom-left
+			// label at bottom-left (typeset so mixed numbers / fractions render nicely)
 			if (b.label !== null && b.label !== undefined && String(b.label) !== '') {
-				g.appendChild(textNode(b.label, b.x + 5, b.y + b.h - 5, 'start'));
+				placeLabel(g, b.label, b.x + 6, b.y + b.h - 6, 'start', 12);
 			}
 
 			layer.appendChild(g);
@@ -134,7 +175,7 @@ FB.Renderer = FB.Renderer || {};
 			line.setAttribute('y1', y1);
 			line.setAttribute('x2', x2);
 			line.setAttribute('y2', y2);
-			line.setAttribute('stroke', '#FF0000');
+			line.setAttribute('stroke', TH.guide);
 			line.setAttribute('stroke-width', 1);
 			return line;
 		}
@@ -203,6 +244,7 @@ FB.Renderer = FB.Renderer || {};
 
 		function render(scene) {
 			scene = scene || {};
+			readTheme();
 			var bars = scene.bars || [];
 			var mats = scene.mats || [];
 
@@ -227,6 +269,17 @@ FB.Renderer = FB.Renderer || {};
 			overlayLayer.setAttribute('class', 'overlay');
 			renderOverlay(overlayLayer, scene);
 			svgRoot.appendChild(overlayLayer);
+
+			// Extension point: external layers (a Prolog reasoner drawing
+			// constraint annotations, Lit-based custom-element overlays, etc.)
+			// registered via FB.Hooks.registerOverlay are invoked here every
+			// frame and (re)draw into the freshly rebuilt tree. See src/api/hooks.js.
+			if (FB.Hooks && typeof FB.Hooks.runOverlays === 'function') {
+				FB.Hooks.runOverlays({ svgRoot: svgRoot, scene: scene, doc: doc, ns: SVGNS });
+			}
+			if (FB.Hooks && typeof FB.Hooks.emit === 'function') {
+				FB.Hooks.emit('render', scene);
+			}
 
 			return svgRoot.children.length;
 		}
