@@ -1,0 +1,352 @@
+/* FB_Summer_2026/src/styles/app.css
+ *
+ * Reproduces the original Fraction Bars look (fractionBars.css): Helvetica text,
+ * light-gray canvas (#EFEFEF) with a gray grooved border, and the exact .colorN
+ * swatch hex values. Adds a responsive layout (side rail >= 900px, wrapping
+ * toolbar below) and >= 44px touch targets.
+ */
+
+:root { color-scheme: light; }
+
+/* ---- Base typography (ported from fractionBars.css) ---------------------- */
+html, body {
+	margin: 0;
+	padding: 0;
+}
+body, p, td {
+	font-family: Helvetica, Arial, sans-serif;
+	font-size: 12px;
+}
+a {
+	cursor: pointer;
+}
+
+h1.bar_title {
+	font-family: Helvetica, Arial, sans-serif;
+	font-size: 20px;
+	font-weight: bold;
+	margin: 8px 12px;
+}
+
+/* ---- App shell ----------------------------------------------------------- */
+.fb-app {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 8px 12px 16px;
+	box-sizing: border-box;
+}
+
+/* ---- Toolbar ------------------------------------------------------------- */
+.fb-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	gap: 12px;
+}
+
+.fb-toolbar .toolGroup {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	margin-bottom: 12px;
+	align-content: flex-start;
+}
+
+/* Tool buttons: original bordered block look, upsized to a 44px touch target. */
+.fb-toolbar .toolBtn {
+	border: 1px solid #999999;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	min-width: 80px;
+	min-height: 44px;
+	padding: 2px 6px;
+	margin: 0;
+	text-align: center;
+	background: #ffffff;
+	user-select: none;
+	-webkit-user-select: none;
+	/* Prevent the iOS double-tap-to-zoom delay/zoom on controls. */
+	touch-action: manipulation;
+	-webkit-tap-highlight-color: transparent;
+}
+.fb-btn, .colorBlock, .colorBlock1 { touch-action: manipulation; }
+.fb-toolbar .toolBtn:hover {
+	background-color: #f4f4f4;
+}
+.fb-toolbar .toolBtn.hideShow {
+	min-width: 44px;
+}
+
+/* Selected tool (ported a.toolSelected). */
+.fb-toolbar .toolBtn.toolSelected,
+.fb-toolbar .toolBtn[aria-pressed="true"] {
+	border: 1px solid black;
+	background-color: #EEEEEE;
+}
+
+[hidden] { display: none !important; }
+
+/* ---- Color swatches ------------------------------------------------------ */
+/* 8 quick swatches in the rail (original .colorBlock was 10x10; enlarged for
+ * touch). The 16-color palette inside Properties keeps the original block size. */
+.swatchGroup {
+	gap: 6px;
+}
+.fb-toolbar .colorBlock {
+	border: 1px solid gray;
+	width: 44px;
+	height: 44px;
+	box-sizing: border-box;
+	display: inline-block;
+	margin: 2px;
+}
+.colorBlock.colorSelected,
+.colorBlock1.colorSelected {
+	border: 1px solid black;
+	outline: 2px solid black;
+}
+
+.fb-color-palette {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	max-width: 360px;
+	margin: 8px 0;
+}
+.fb-color-palette p {
+	flex-basis: 100%;
+	margin: 0 0 4px;
+}
+.colorBlock1 {
+	border: 1px solid gray;
+	width: 32px;
+	height: 32px;
+	box-sizing: border-box;
+	display: inline-block;
+	margin: 2px;
+}
+
+/* Exact .colorN hex values transcribed from fractionBars.css. */
+.color1 { background-color: #A8FFF4; }
+.color2 { background-color: #DDFFF0; }
+.color3 { background-color: #ACBEFF; }
+.color4 { background-color: #707EFF; }
+.color5 { background-color: #FFFFFF; }
+.color6 { background-color: #EFEFEF; }
+.color7 { background-color: #E6E6E6; }
+.color8 { background-color: #D6D6D6; }
+.color9 { background-color: #FFCC66; }
+.color10 { background-color: #FFFF66; }
+.color11 { background-color: #E9FF66; }
+.color12 { background-color: #CCFF66; }
+.color13 { background-color: #DD99FF; }
+.color14 { background-color: #FF92DA; }
+.color15 { background-color: #F56ED0; }
+.color16 { background-color: #FF8C8C; }
+
+/* ---- Canvas stage -------------------------------------------------------- */
+.fb-stage {
+	position: relative;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+/* Canvas: light-gray fill with gray grooved border (ported #fbCanvas). */
+.fb-canvas {
+	display: block;
+	width: 100%;
+	height: auto;
+	aspect-ratio: 1000 / 700;
+	background-color: #EFEFEF;
+	border: 1px gray groove;
+	box-sizing: border-box;
+	touch-action: none; /* let the pointer layer own gestures */
+}
+
+/* Label overlay input (original #labelInput is hidden until editing). */
+.fb-label-input {
+	display: none;
+	position: absolute;
+	font-family: Helvetica, Arial, sans-serif;
+	font-size: 12px;
+	z-index: 5;
+}
+.fb-label-input.is-editing {
+	display: inline-block;
+}
+
+/* Vertical/Horizontal radio toggles default hidden (the original used an inline
+ * style; moved to a class so no inline style attribute is needed under CSP). The
+ * Properties dialog reveals them via element.style.display (CSSOM, CSP-safe). */
+.fb-vh-toggle { display: none; }
+
+/* ---- Gallery ------------------------------------------------------------- */
+.fb-gallery {
+	display: block;
+	border: 1px gray groove;
+	background: #fafafa;
+	padding: 8px 12px;
+	max-width: 360px;
+}
+.fb-gallery-title { font-size: 14px; font-weight: bold; margin: 0 0 8px; }
+.fb-gallery-saverow { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+.fb-gallery-input { flex: 1 1 140px; min-height: 32px; padding: 2px 4px; box-sizing: border-box; }
+.fb-gallery-list { list-style: none; margin: 0; padding: 0; }
+.fb-gallery-item { display: flex; align-items: center; gap: 6px; padding: 4px 0; flex-wrap: wrap; }
+.fb-gallery-name { flex: 1 1 120px; }
+.fb-gallery-empty { color: #666; font-style: italic; }
+.fb-btn-sm { min-height: 32px; min-width: 0; padding: 2px 8px; }
+
+/* ---- Native dialogs ------------------------------------------------------ */
+.fb-dialog {
+	border: 1px gray groove;
+	border-radius: 4px;
+	padding: 0;
+	max-width: min(92vw, 480px);
+	font-family: Helvetica, Arial, sans-serif;
+	font-size: 12px;
+}
+.fb-dialog::backdrop {
+	background: rgba(0, 0, 0, 0.35);
+}
+.fb-dialog-body {
+	padding: 16px;
+	margin: 0;
+}
+.fb-dialog-title {
+	font-size: 14px;
+	font-weight: bold;
+	margin: 0 0 12px;
+}
+.fb-dialog label {
+	display: inline-block;
+	margin-right: 6px;
+}
+.fb-dialog input[type="text"] {
+	font-family: Helvetica, Arial, sans-serif;
+	min-height: 32px;
+	padding: 2px 4px;
+	box-sizing: border-box;
+}
+.fb-dialog input[type="radio"] {
+	width: 20px;
+	height: 20px;
+	vertical-align: middle;
+}
+.fb-slider {
+	width: 250px;
+	max-width: 100%;
+	height: 32px;
+}
+.fb-split-display {
+	background-color: #EFEFEF;
+	border: 1px gray groove;
+	width: 100px;
+	height: 100px;
+}
+.fb-make-table {
+	display: inline-table;
+	margin: 8px 0;
+}
+.fb-make-table input {
+	width: 48px;
+}
+.fb-make-num {
+	border-bottom: solid 1px black;
+}
+
+.fb-dialog-buttons {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	margin-top: 16px;
+}
+.fb-btn {
+	font-family: Helvetica, Arial, sans-serif;
+	font-size: 12px;
+	min-height: 44px;
+	min-width: 64px;
+	padding: 4px 12px;
+	border: 1px solid #999999;
+	background: #ffffff;
+	cursor: pointer;
+}
+.fb-btn:hover {
+	background-color: #f4f4f4;
+}
+
+/* ---- Toast (notify) ------------------------------------------------------ */
+.fb-toast {
+	position: fixed;
+	left: 50%;
+	bottom: 24px;
+	transform: translateX(-50%);
+	max-width: 90vw;
+	background: #323232;
+	color: #ffffff;
+	font-family: Helvetica, Arial, sans-serif;
+	font-size: 13px;
+	padding: 10px 16px;
+	border-radius: 4px;
+	white-space: pre-line;
+	opacity: 0;
+	transition: opacity 0.2s ease;
+	z-index: 1000;
+}
+.fb-toast.is-visible {
+	opacity: 1;
+}
+
+/* ---- Responsive layout --------------------------------------------------- */
+/* >= 900px: toolbar becomes a fixed-width side rail, canvas fills the rest. */
+@media (min-width: 900px) {
+	.fb-app {
+		display: grid;
+		grid-template-columns: 120px 1fr;
+		grid-template-areas:
+			"title  title"
+			"tools  stage"
+			"tools  gallery";
+		align-items: start;
+	}
+	h1.bar_title { grid-area: title; }
+	.fb-toolbar {
+		grid-area: tools;
+		flex-direction: column;
+		flex-wrap: nowrap;
+	}
+	.fb-toolbar .toolGroup {
+		flex-direction: column;
+		width: 100%;
+	}
+	.fb-toolbar .toolBtn {
+		width: 100%;
+	}
+	.swatchGroup {
+		flex-direction: row !important;
+		flex-wrap: wrap;
+	}
+	.fb-stage { grid-area: stage; }
+	.fb-gallery { grid-area: gallery; }
+}
+
+/* ---- Print (vector) ------------------------------------------------------ */
+/* Print only the canvas, as scalable vector SVG -- no chrome, no raster. */
+@media print {
+	.fb-toolbar,
+	.fb-gallery,
+	.fb-label-input,
+	h1.bar_title,
+	.fb-toast { display: none !important; }
+	.fb-app { display: block; padding: 0; }
+	.fb-stage { width: 100%; }
+	.fb-canvas {
+		width: 100%;
+		height: auto;
+		border: 1px solid #000;
+		background-color: #ffffff;
+	}
+}
