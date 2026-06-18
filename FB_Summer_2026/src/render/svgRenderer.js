@@ -109,7 +109,10 @@ FB.Renderer = FB.Renderer || {};
 			if (b.fraction !== null && b.fraction !== undefined && String(b.fraction) !== '') {
 				var frac = FB.Typeset.buildFractionSVG(doc, b.fraction, {
 					x: b.x + b.w - 5,
-					y: b.y - 5,
+					// Raised so the stacked fraction sits fully ABOVE the bar edge
+					// (matching the original flat-text placement) instead of the
+					// denominator dipping into the bar interior.
+					y: b.y - 15,
 					anchor: 'end',
 					fontSize: 12,
 					color: '#000000'

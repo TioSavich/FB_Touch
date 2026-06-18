@@ -53,6 +53,38 @@ blocked by the browse sandbox; HTTP serving does not relax the in-page CSP).
 - `/tmp/fb-drawn.png` (after touch draw)
 - `/tmp/fb-mobile.png` (responsive)
 
+## Adversarial / tablet "beat it to hell" pass (2026-06-17)
+
+Math (driven through the model, numeric):
+- [x] Measure: 1/2, 1/3, 1/7 exact; split widths sum **exactly** to bar width (no
+      rounding drift); join 100+100=200; iterate 50×4=200; make ¾·400=300.
+- [x] Continued-fraction `createFraction`: 1/2, 1/3, 2/7, 22/7, 3, 5/4, 7/7→1.
+
+Tablet / touch (iPad viewports 768×1024 & 1024×768, real PointerEvents):
+- [x] Coordinate mapping exact (tap 50%×30% → model 500,209; drag → 201×70).
+- [x] Multi-touch: second finger ignored, stray second-finger up handled → 1 clean bar.
+- [x] Touch drag-move and manual-split (Line) at a bar edge both work.
+- [x] iterate ×150 = 12 ms (no freeze); iterate input now clamped to 100.
+
+Durability bugs found AND fixed (regressions in `durability.test.mjs`):
+- [x] Measure with **no unit bar** threw `null.size` → now guarded + toast.
+- [x] A **tap with no drag** created a 0-size junk bar → now ignored (<4px).
+- [x] **Malformed/garbage state** spammed `<rect>` attribute errors & rendered
+      broken → `Bar/Mat.copyFromJSON` now coerce to finite/safe values (verified:
+      garbage load → no console errors, w=0).
+- [x] `makeMake(-5)` made a negative-width bar → now rejects non-positive/non-finite.
+- [x] iOS double-tap-zoom guard (`touch-action: manipulation`) on controls.
+- [x] Split slider min restored to 2 (parity).
+- [x] Label XSS attempt (`<script>`) rendered as inert text (textContent).
+- [x] Representation: stacked fraction raised to sit fully above the bar edge.
+
+Verdict (the three questions):
+- **Math preserved:** yes — model ported verbatim; numeric checks exact.
+- **Representation solid:** yes — equal splits, red dividers, captions/labels,
+  vector typeset fractions (incl. mixed numbers) above the bar; scales crisply.
+- **Durable:** yes — no crashes/freezes/console errors under the abuse battery;
+  bad input coerced or rejected with a toast; CSP holds; touch layer robust.
+
 ## Notes / follow-ups
 - Authentic Turkish **UI label** strings (toolbar/dialogs) were not present in the
   provided sources (only the inline TR `alert` strings were). The `data-i18n` +

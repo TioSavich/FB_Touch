@@ -172,13 +172,17 @@ FB.Pointer.handleUp = function (controller, loc) {
 	var state = controller.state;
 	state.mouseUpLoc = FB.Pointer.pointFromLocal(loc);
 
-	if (state.currentAction === 'bar') {
-		controller.addUndoState();
-		controller.addBar();
-		FB.Toolbar.clearSelectionButton(controller);
-	} else if (state.currentAction === 'mat') {
-		controller.addUndoState();
-		controller.addMat();
+	if (state.currentAction === 'bar' || state.currentAction === 'mat') {
+		// Ignore degenerate "draws" -- a tap with little or no drag. On touch
+		// devices a stray tap in Bar/Mat mode otherwise created an invisible
+		// zero-size object that clutters the model and exports.
+		var MIN_DRAW = 4;
+		var d = state.mouseDownLoc, u = state.mouseUpLoc;
+		var big = d && u && (Math.abs(u.x - d.x) >= MIN_DRAW || Math.abs(u.y - d.y) >= MIN_DRAW);
+		if (big) {
+			controller.addUndoState();
+			if (state.currentAction === 'bar') { controller.addBar(); } else { controller.addMat(); }
+		}
 		FB.Toolbar.clearSelectionButton(controller);
 	}
 

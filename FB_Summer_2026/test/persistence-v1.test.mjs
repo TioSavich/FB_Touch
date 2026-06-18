@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { loadFB } from './_harness.mjs';
-const FB = loadFB(['src/model/Point.js','src/model/Split.js','src/model/Mat.js','src/model/Bar.js','src/persistence/format.js','src/persistence/legacy.js']);
+const FB = loadFB(['src/model/Point.js','src/model/Split.js','src/model/Mat.js','src/model/Utilities.js','src/model/Bar.js','src/persistence/format.js','src/persistence/legacy.js']);
 
 // Legacy v1 file: decycled CanvasState; mUnitBar is a $ref into mBars.
 const v1 = JSON.stringify({

@@ -108,14 +108,15 @@ FB.Mat.copyFromJSON = function(JSON_Mat) {
 	var b = new FB.Mat() ;
 
 
-	b.x = JSON_Mat.x ;
-	b.y = JSON_Mat.y ;
-	b.w = JSON_Mat.w ;
-	b.h = JSON_Mat.h ;
-	b.size = JSON_Mat.size ;
-	b.color = JSON_Mat.color ;
+	var F = FB.Utilities;
+	b.x = F.toFinite(JSON_Mat.x) ;
+	b.y = F.toFinite(JSON_Mat.y) ;
+	b.w = F.toNonNeg(JSON_Mat.w) ;
+	b.h = F.toNonNeg(JSON_Mat.h) ;
+	b.size = F.toNonNeg(JSON_Mat.size) ;
+	b.color = (typeof JSON_Mat.color === 'string') ? JSON_Mat.color : '#888888' ;
 
-	b.type = JSON_Mat.type ;
+	b.type = (typeof JSON_Mat.type === 'string') ? JSON_Mat.type : 'mat' ;
 	b.isSelected = false ;
 
 	return b ;

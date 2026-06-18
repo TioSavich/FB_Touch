@@ -170,7 +170,13 @@ FB.Dialogs = FB.Dialogs || {};
 
 		// --- #dialog-iterate -----------------------------------------------------
 		bindButtons('dialog-iterate', 'iterate-ok', 'iterate-cancel', function () {
-			var num_iterate = fieldValue('iterate-field');
+			// Validate + clamp: ignore non-numeric / < 1, cap at 100 so a stray
+			// large entry cannot freeze a low-powered tablet.
+			var raw = parseInt(fieldValue('iterate-field'), 10);
+			if (!isFinite(raw) || raw < 1) { close('dialog-iterate'); return; }
+			var MAX_ITER = 100;
+			var num_iterate = raw > MAX_ITER ? MAX_ITER : raw;
+			if (raw > MAX_ITER) { notify('Maximum ' + MAX_ITER + ' iterations.'); }
 			var direction;
 			if (!FB.Utilities.flag[2]) {
 				direction = 'Horizontal';

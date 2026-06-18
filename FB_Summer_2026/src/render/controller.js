@@ -208,10 +208,12 @@ FB.Controller.create = function (deps) {
 	};
 
 	controller.makeMake = function (num_frac) {
+		// Only build a bar for a finite, positive fraction. Guards against a
+		// negative whole-number entry (which produced a negative-width rect) and
+		// NaN/0 inputs.
+		if (!(typeof num_frac === 'number' && isFinite(num_frac) && num_frac > 0)) { return; }
 		if (state.selectedBars.length > 0) {
-
 			state.bars.push(state.selectedBars[0].makeNewCopy(num_frac));
-
 			controller.refresh();
 		}
 	};
@@ -219,10 +221,16 @@ FB.Controller.create = function (deps) {
 	// ----- Measurement / unit bar --------------------------------------------
 
 	controller.measureBars = function () {
-		if (state.selectedBars.length > 0) {
-			for (var i = state.selectedBars.length - 1; i >= 0; i--) {
-				state.selectedBars[i].fraction = FB.Utilities.createFraction(state.selectedBars[i].size, state.unitBar.size);
-			}
+		if (state.selectedBars.length === 0) { return; }
+		// Guard: measuring requires a unit bar. Without this the original threw a
+		// TypeError on this.unitBar.size and left the app wedged -- a common path
+		// for a learner who taps Measure before Set Unit Bar.
+		if (!state.unitBar || !(state.unitBar.size > 0)) {
+			notify(FB.I18N && FB.I18N.t ? FB.I18N.t('measure_no_unit') : 'Set a unit bar first.');
+			return;
+		}
+		for (var i = state.selectedBars.length - 1; i >= 0; i--) {
+			state.selectedBars[i].fraction = FB.Utilities.createFraction(state.selectedBars[i].size, state.unitBar.size);
 		}
 	};
 

@@ -680,17 +680,20 @@ FB.Bar.copyFromJSON = function(JSON_Bar) {
 	var b = new FB.Bar() ;
 
 
-	b.x = JSON_Bar.x ;
-	b.y = JSON_Bar.y ;
-	b.w = JSON_Bar.w ;
-	b.h = JSON_Bar.h ;
-	b.size = JSON_Bar.size ;
-	b.color = JSON_Bar.color ;
-	b.makeSplitsFromJSON(JSON_Bar.splits) ;
-	b.label = JSON_Bar.label ;
-	b.isUnitBar = JSON_Bar.isUnitBar ;
-	b.fraction = JSON_Bar.fraction ;
-	b.type = JSON_Bar.type ;
+	// Coerce on import so a corrupt or hand-edited file cannot inject NaN /
+	// undefined / non-string values that would produce invalid SVG attributes.
+	var F = FB.Utilities;
+	b.x = F.toFinite(JSON_Bar.x) ;
+	b.y = F.toFinite(JSON_Bar.y) ;
+	b.w = F.toNonNeg(JSON_Bar.w) ;
+	b.h = F.toNonNeg(JSON_Bar.h) ;
+	b.size = F.toNonNeg(JSON_Bar.size) ;
+	b.color = (typeof JSON_Bar.color === 'string') ? JSON_Bar.color : '#FFFF66' ;
+	b.makeSplitsFromJSON(Array.isArray(JSON_Bar.splits) ? JSON_Bar.splits : []) ;
+	b.label = (JSON_Bar.label == null) ? '' : String(JSON_Bar.label) ;
+	b.isUnitBar = !!JSON_Bar.isUnitBar ;
+	b.fraction = (typeof JSON_Bar.fraction === 'number' || typeof JSON_Bar.fraction === 'string') ? JSON_Bar.fraction : '' ;
+	b.type = (typeof JSON_Bar.type === 'string') ? JSON_Bar.type : 'bar' ;
 	b.isSelected = false ;
 
 	return b ;
@@ -699,7 +702,10 @@ FB.Bar.copyFromJSON = function(JSON_Bar) {
 FB.Bar.prototype.makeSplitsFromJSON = function(JSON_splits) {
 
 	this.clearSplits();
+	var F = FB.Utilities;
 	for (var i = 0; i < JSON_splits.length; i++) {
-		this.addSplit(JSON_splits[i].x,JSON_splits[i].y,JSON_splits[i].w,JSON_splits[i].h,JSON_splits[i].color);
+		var s = JSON_splits[i] || {};
+		this.addSplit(F.toFinite(s.x), F.toFinite(s.y), F.toNonNeg(s.w), F.toNonNeg(s.h),
+			(typeof s.color === 'string') ? s.color : '#FFFF66');
 	}
 };

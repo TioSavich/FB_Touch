@@ -68,7 +68,11 @@ h1.bar_title {
 	background: #ffffff;
 	user-select: none;
 	-webkit-user-select: none;
+	/* Prevent the iOS double-tap-to-zoom delay/zoom on controls. */
+	touch-action: manipulation;
+	-webkit-tap-highlight-color: transparent;
 }
+.fb-btn, .colorBlock, .colorBlock1 { touch-action: manipulation; }
 .fb-toolbar .toolBtn:hover {
 	background-color: #f4f4f4;
 }

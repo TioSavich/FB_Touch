@@ -87,6 +87,7 @@ FB.I18N = FB.I18N || {};
 		select_one_to_iterate: 'Please select exactly one bar to iterate.',
 		select_one_to_make: 'Please select exactly one bar to make new bar.',
 		select_two_to_join: 'Please select exactly two bars (and no mats) before attempting to Join.',
+		measure_no_unit: 'Set a unit bar first: select a bar, then tap "Set Unit Bar".',
 		join_dimension_mismatch: 'To Join, bars must have a matching dimension in height or width.',
 		repeat_no_unit: 'Tried to Repeat when no repeatUnit was set.',
 		save_unsupported: 'This browser does not support saving. \nHTML5 support is needed. \n\nFor best results use the most recent Firefox, \nChrome, Safari, or Internet Explorer browser.'
@@ -100,6 +101,7 @@ FB.I18N = FB.I18N || {};
 		select_one_to_iterate: 'Lütfen yineleme işlemi yapabilmek için bir kesir şeridi seçiniz.',
 		select_one_to_make: 'Lütfen yeni bir şerit yapabilmek için bir kesir şeridi seçiniz.',
 		select_two_to_join: 'Birleştirme işlemi yapabilmek için lütfen iki kesir şeridi seçiniz.',
+		measure_no_unit: 'Önce bir birim kesir şeridi ayarlayın: bir şerit seçin, sonra "Birim Şerit Ayarla" düğmesine basın.',
 		save_unsupported: 'Bu tarayıcı kaydetmeyi desteklememektedir. Tarayıcının \nHTML5 destekli olması gereklidir. \n\nEn iyi sonuç için lütfen Firefox, \nChrome, Safari ya da Internet Explorer tarayıcılarından birini kullanınız.'
 	};
 

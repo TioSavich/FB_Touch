@@ -35,6 +35,17 @@ FB.Utilities.USE_LAST_SELECTION = 'useLast' ;
 // CSP, and runtime script injection has no place in a hermetically-sealed,
 // no-network deployment.
 
+// Coercion helpers used when importing save files so that corrupt or
+// hand-edited data renders safely instead of producing invalid SVG attributes.
+FB.Utilities.toFinite = function (v, def) {
+  var n = Number(v);
+  return isFinite(n) ? n : (def || 0);
+};
+FB.Utilities.toNonNeg = function (v) {
+  var n = Number(v);
+  return (isFinite(n) && n > 0) ? n : 0;
+};
+
 FB.Utilities.createFraction = function(numerator, denominator) {
   // Calculate the (approximate) fraction for this measurement.
   // Basic algorigm taken from Dr. Math at the Math Forum...

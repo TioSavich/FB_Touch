@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { loadFB } from './_harness.mjs';
-const FB = loadFB(['src/model/Point.js','src/model/Split.js','src/model/Mat.js','src/model/Bar.js','src/persistence/format.js']);
+const FB = loadFB(['src/model/Point.js','src/model/Split.js','src/model/Mat.js','src/model/Utilities.js','src/model/Bar.js','src/persistence/format.js']);
 
 function sample() {
   const u = FB.Bar.create(10,10,200,40,'bar','#FFFF66'); u.isUnitBar = true; u.fraction='1/1';
