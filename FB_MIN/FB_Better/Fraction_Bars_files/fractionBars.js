@@ -24,6 +24,64 @@
     include_js('class/FractionBarsCanvas.js', 'js/');
 */
 
+// Touch and interaction utilities
+const TouchUtils = {
+    // Debounce function for touch events
+    debounce: function(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    },
+    
+    // Check if device supports touch
+    isTouchDevice: function() {
+        return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    },
+    
+    // Get unified event coordinates for mouse/touch
+    getEventCoords: function(e) {
+        if (e.touches && e.touches.length > 0) {
+            return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        } else if (e.changedTouches && e.changedTouches.length > 0) {
+            return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+        }
+        return { x: e.clientX, y: e.clientY };
+    },
+    
+    // Modern DOM helper functions to replace jQuery
+    querySelector: function(selector) {
+        return document.querySelector(selector);
+    },
+    
+    querySelectorAll: function(selector) {
+        return document.querySelectorAll(selector);
+    },
+    
+    addClass: function(element, className) {
+        if (element && element.classList) {
+            element.classList.add(className);
+        }
+    },
+    
+    removeClass: function(element, className) {
+        if (element && element.classList) {
+            element.classList.remove(className);
+        }
+    },
+    
+    addEventListener: function(element, event, handler, options = {}) {
+        if (element && element.addEventListener) {
+            element.addEventListener(event, handler, options);
+        }
+    }
+};
+
 var point1 = null;
 var point2 = null;
 var fbContext = null;
@@ -35,40 +93,76 @@ var fracEvent = null;
 
 var splitWidgetObj = null; // Added 'var' for proper declaration
 
-$(document).ready(function() {
+// Modern DOMContentLoaded replacement for $(document).ready()
+document.addEventListener('DOMContentLoaded', function() {
     // First attempt
     hideButton("id_filetext");
     hideButton("action_previous");
     hideButton("action_next");
 
     const fbCanvas = document.getElementById('fbCanvas');
+    const splitDisplayCanvas = document.getElementById('split-display');
 
-    // Prevent touch scrolling and zooming
+    // Prevent default touch behaviors that interfere with canvas interaction
     document.addEventListener('touchmove', function(event) {
         event.preventDefault();
     }, { passive: false });
 
-    interact(fbCanvas)
-        .on('tap', function(event) {
-            event.preventDefault();
-            const e = event.originalEvent;
-            handleCanvasTap(e);
-        })
-        .on('down', function(event) {
-            event.preventDefault();
-            const e = event.originalEvent;
-            handleCanvasDown(e);
-        })
-        .on('up', function(event) {
-            event.preventDefault();
-            const e = event.originalEvent;
-            handleCanvasUp(e);
-        })
-        .on('move', function(event) {
-            event.preventDefault();
-            const e = event.originalEvent;
-            handleCanvasMove(e);
+    document.addEventListener('touchstart', function(event) {
+        if (event.touches.length > 1) {
+            event.preventDefault(); // Prevent multi-touch gestures like pinch-zoom
+        }
+    }, { passive: false });
+
+    // Modern unified event handlers for canvas interaction
+    function setupCanvasInteraction(canvas) {
+        if (!canvas) return;
+
+        // Touch event handlers
+        const touchHandlers = {
+            handleStart: function(e) {
+                e.preventDefault();
+                handleCanvasDown(e);
+            },
+            
+            handleMove: function(e) {
+                e.preventDefault();
+                handleCanvasMove(e);
+            },
+            
+            handleEnd: function(e) {
+                e.preventDefault();
+                handleCanvasUp(e);
+            }
+        };
+
+        // Add touch events
+        canvas.addEventListener('touchstart', touchHandlers.handleStart, { passive: false });
+        canvas.addEventListener('touchmove', touchHandlers.handleMove, { passive: false });
+        canvas.addEventListener('touchend', touchHandlers.handleEnd, { passive: false });
+        
+        // Add mouse events for desktop compatibility
+        canvas.addEventListener('mousedown', touchHandlers.handleStart);
+        canvas.addEventListener('mousemove', touchHandlers.handleMove);
+        canvas.addEventListener('mouseup', touchHandlers.handleEnd);
+        
+        // Handle double tap/click
+        let lastTapTime = 0;
+        canvas.addEventListener('touchend', function(e) {
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTapTime;
+            if (tapLength < 500 && tapLength > 0) {
+                handleCanvasTap(e);
+            }
+            lastTapTime = currentTime;
         });
+        
+        canvas.addEventListener('dblclick', handleCanvasTap);
+    }
+
+    // Set up interaction for both canvases
+    setupCanvasInteraction(fbCanvas);
+    setupCanvasInteraction(splitDisplayCanvas);
 
     function handleCanvasTap(e) {
         var fbImg = fbContext.getImageData(0, 0, 1000, 600);
@@ -80,9 +174,9 @@ $(document).ready(function() {
         fbCanvasObj.check_for_drag = true;
         fbCanvasObj.cacheUndoState();
 
-        updatemouseLoc(e, $(fbCanvas));
-        updatemouseAction('mousedown');
-        fbCanvasObj.mouseDownLoc = Point.createFrommouseEvent(e, $(fbCanvas));
+        updatemouseLoc(e, fbCanvas);
+        updatemouseAction('touchstart');
+        fbCanvasObj.mouseDownLoc = Point.createFromTouchEvent(e, fbCanvas);
         var b = fbCanvasObj.barClickedOn();
         var m = fbCanvasObj.matClickedOn();
 
@@ -900,21 +994,29 @@ function resetFormElement(e) {
     e.unwrap();
 }
 
-// For debugging
+// For debugging - modernized for touch events
 
 function updatemouseLoc(e, elem) {
-    var x = e.clientX - elem.position().left;
-    var y = e.clientY - elem.position().top;
-    var offsetX = elem.offset().left;
-    var offsetY = elem.offset().top;
+    var coords = TouchUtils.getEventCoords(e);
+    var rect = (elem.nodeType ? elem : elem[0]).getBoundingClientRect();
+    var x = coords.x - rect.left;
+    var y = coords.y - rect.top;
+    var offsetX = rect.left + window.pageXOffset;
+    var offsetY = rect.top + window.pageYOffset;
     /*
-    $('#mouseLoc').text(x + ', ' + y + ' | ' + offsetX + ', ' + offsetY + ' | ' + window.pageXOffset + ', ' + window.pageYOffset );
+    var mouseLocElement = document.getElementById('mouseLoc');
+    if (mouseLocElement) {
+        mouseLocElement.textContent = x + ', ' + y + ' | ' + offsetX + ', ' + offsetY + ' | ' + window.pageXOffset + ', ' + window.pageYOffset;
+    }
     */
 }
 
 function updatemouseAction(actionName) {
     /*
-    $('#mouseAction').text(actionName);
+    var mouseActionElement = document.getElementById('mouseAction');
+    if (mouseActionElement) {
+        mouseActionElement.textContent = actionName;
+    }
     */
 }
 
